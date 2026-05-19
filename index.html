@@ -2,34 +2,60 @@
 <html lang="th">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>āPO — Handpicked Seafood</title>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
     <style>
         :root { --gold: #AF9500; --dark-bg: #0D2342; --card-bg: #122C52; --champagne: #E2D1C3; }
         * { margin:0; padding:0; box-sizing:border-box; }
         body { background: var(--dark-bg); color: var(--champagne); font-family: "Montserrat", sans-serif; padding-bottom: 50px; }
+        
         .header { padding: 30px 20px 20px; text-align: center; }
-        .logo { width: 160px; height: 160px; border-radius: 50%; border: 1.5px solid var(--gold); object-fit: cover; margin-bottom: 20px; }
-        .tabs { display: flex; justify-content: center; gap: 30px; margin-bottom: 25px; border-bottom: 1px solid rgba(175, 149, 0, 0.2); padding-bottom: 10px; width: 100%; }
-        .tab-btn { color: rgba(226, 209, 195, 0.4); cursor: pointer; font-size: 13px; text-transform: uppercase; letter-spacing: 2px; font-weight: 600; padding-bottom: 5px; transition: 0.3s; }
+        
+        /* ปรับโลโก้: ขนาดวงกลมเล็กลง แต่ซูมรูปข้างในให้ใหญ่ขึ้น */
+        .logo-container {
+            width: 140px; /* ลดขนาดรวมของวงกลม (เดิม 160px) */
+            height: 140px;
+            border-radius: 50%;
+            border: 1.5px solid var(--gold);
+            overflow: hidden; /* บังคับให้รูปที่ซูมอยู่แค่ในวงกลม */
+            margin: 0 auto 20px; /* จัดกึ่งกลางและเว้นระยะล่าง */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .logo {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transform: scale(1.1); /* ขยายรูปข้างในให้ใหญ่ขึ้น 10% (เดิมคือ 1.0) */
+            transition: transform 0.3s; /* เพิ่มความนุ่มนวลเวลาโหลด */
+        }
+        
+        .tabs { display: flex; justify-content: center; gap: 30px; margin-bottom: 25px; border-bottom: 1px solid rgba(175, 149, 0, 0.2); padding-bottom: 10px; }
+        .tab-btn { color: rgba(226, 209, 195, 0.4); cursor: pointer; font-size: 13px; text-transform: uppercase; letter-spacing: 2px; font-weight: 600; padding-bottom: 5px; }
         .tab-btn.active { color: var(--gold); border-bottom: 2px solid var(--gold); }
+        
         .container { max-width: 500px; margin: 0 auto; padding: 0 16px; }
         .tab-content { display: none; }
         .tab-content.active { display: block; }
+        
         .luxury-card { background: var(--card-bg); border-radius: 4px; margin-bottom: 30px; border: 1px solid rgba(175, 149, 0, 0.15); overflow: hidden; }
         .card-visual { height: 250px; background-size: cover; background-position: center; }
         .card-content { padding: 20px; }
         h2 { font-family: "Playfair Display", serif; font-size: 22px; color: #fff; margin-bottom: 15px; }
-        .specs-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; font-size: 13px; border-top: 1px solid rgba(175, 149, 0, 0.15); padding-top: 15px; }
-        .spec-item { color: var(--gold); font-size: 9px; text-transform: uppercase; display: block; margin-bottom: 2px; }
+        .specs-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; font-size: 12px; }
+        .spec-item { color: var(--gold); font-size: 9px; text-transform: uppercase; }
         .price-main { color: var(--gold); font-size: 16px; font-weight: 600; }
         .btn-luxury { background: var(--gold); color: #000; border: none; padding: 12px; width: 100%; font-weight: 600; cursor: pointer; border-radius: 3px; }
     </style>
 </head>
 <body>
     <div class="header">
-        <img src="https://pub-0ae76ea92a9d4cec8f2d5aace411ab7a.r2.dev/D3D0031F-0375-4B40-BD5F-E95052107138.png?v=5" class="logo" alt="āPO Logo">
+        <div class="logo-container">
+            <img src="https://pub-0ae76ea92a9d4cec8f2d5aace411ab7a.r2.dev/D3D0031F-0375-4B40-BD5F-E95052107138.png?v=7" class="logo" alt="āPO Logo">
+        </div>
         <div class="tabs">
             <div class="tab-btn active" onclick="showTab('fish', this)">The Fish</div>
             <div class="tab-btn" onclick="showTab('shell', this)">Shell & Sea</div>
@@ -64,10 +90,10 @@
                         <small style="color:var(--gold)">${s.code}</small>
                         <h2>${s.name}</h2>
                         <div class="specs-grid">
-                            <div><span class="spec-item">Weight</span>${s.weight}&nbsp;kg</div>
-                            <div><span class="spec-item">Origin</span>${s.source}</div>
-                            <div><span class="spec-item">Price / kg</span>${parseInt(s.priceKg).toLocaleString()}&nbsp;฿</div>
-                            <div class="price-main"><span class="spec-item">Total</span>${(s.weight * s.priceKg).toLocaleString()}&nbsp;฿</div>
+                            <div><div class="spec-item">Weight</div>${s.weight} kg</div>
+                            <div><div class="spec-item">Origin</div>${s.source}</div>
+                            <div><div class="spec-item">Price/kg</div>${parseInt(s.priceKg).toLocaleString()} ฿</div>
+                            <div class="price-main"><div class="spec-item">Total</div>${(s.weight * s.priceKg).toLocaleString()} ฿</div>
                         </div>
                         <button class="btn-luxury" onclick="window.open('https://line.me/R/oaMessage/@885iivsu/?สนใจสั่งซื้อ ${s.name} รหัส ${s.code}')">ORDER NOW</button>
                     </div>
