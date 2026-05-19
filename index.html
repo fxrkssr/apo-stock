@@ -2,50 +2,34 @@
 <html lang="th">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>āPO — Handpicked Seafood</title>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,400&family=Montserrat:wght@400;500;600&family=Sarabun:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Montserrat:wght@400;600&family=Sarabun:wght@400;600&display=swap" rel="stylesheet">
     <style>
-        :root { --gold: #AF9500; --brand-blue: #1A4F8B; --dark-bg: #0D2342; --card-bg: #122C52; --champagne: #E2D1C3; }
+        :root { --gold: #AF9500; --dark-bg: #0D2342; --card-bg: #122C52; --champagne: #E2D1C3; }
         * { margin:0; padding:0; box-sizing:border-box; }
-        html, body { background: var(--dark-bg); color: var(--champagne); font-family: "Montserrat", "Sarabun", sans-serif; -webkit-font-smoothing: antialiased; width: 100%; min-height: 100vh; overflow-x: hidden; }
-        .luxury-header { background: #0D2342; border-bottom: 1px solid rgba(175, 149, 0, 0.15); padding-bottom: 5px; }
-        .brand-logo-container { padding: 30px 20px 15px; text-align: center; }
-        .brand-logo-container img { width: 75px; height: auto; border-radius: 50%; border: 1px solid rgba(175, 149, 0, 0.2); }
-        .luxury-tabs { display: flex; max-width: 450px; margin: 0 auto; gap: 40px; padding: 0 20px; }
-        .tab { flex: 1; text-align: center; padding: 12px 0; font-size: 13px; font-weight: 500; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; color: rgba(226, 209, 195, 0.35); border-bottom: 2px solid transparent; }
-        .tab.active { color: var(--gold); border-bottom: 2px solid var(--gold); }
-        .container { max-width: 500px; margin: 0 auto; padding: 25px 16px; }
-        .tab-content { display: none; }
-        .tab-content.active { display: block; }
-        .luxury-card { background: var(--card-bg); border-radius: 4px; margin-bottom: 35px; border: 1px solid rgba(175, 149, 0, 0.12); }
-        .card-visual { height: 320px; background-size: cover; background-position: center; position: relative; border-radius: 4px 4px 0 0; background-color: #0D2342; }
-        .card-content { padding: 20px 20px 25px; position: relative; }
-        .item-code { font-size: 12px; color: var(--gold); letter-spacing: 2px; display: block; margin-bottom: 6px; font-weight: 600; }
-        .card-content h2 { font-family: "Playfair Display", serif; font-size: 26px; color: #fff; margin-bottom: 20px; }
-        .specs-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; border-top: 1px solid rgba(175, 149, 0, 0.15); border-bottom: 1px solid rgba(175, 149, 0, 0.15); padding: 18px 0; margin-bottom: 22px; }
-        .spec-item label { display: block; font-size: 10px; color: var(--gold); margin-bottom: 4px; }
-        .spec-item span { font-size: 16px; color: #fff; }
-        .price-main span { font-size: 21px; color: var(--gold); font-weight: 600; }
-        .card-footer { display: flex; align-items: center; justify-content: space-between; }
-        .btn-luxury { background: var(--gold); color: #000; border: none; padding: 14px 24px; font-weight: 600; cursor: pointer; border-radius: 3px; }
-        .btn-luxury.disabled { background: transparent; border: 1px solid #555; color: #555; cursor: not-allowed; }
+        html, body { background: var(--dark-bg); color: var(--champagne); font-family: "Montserrat", "Sarabun", sans-serif; }
+        .header { padding: 40px 20px 20px; text-align: center; }
+        .logo { width: 150px; height: 150px; border-radius: 50%; border: 2px solid var(--gold); object-fit: cover; margin-bottom: 10px; }
+        .container { max-width: 500px; margin: 0 auto; padding: 0 16px 40px; }
+        .luxury-card { background: var(--card-bg); border-radius: 4px; margin-bottom: 35px; border: 1px solid rgba(175, 149, 0, 0.2); }
+        .card-visual { height: 280px; background-size: cover; background-position: center; border-radius: 4px 4px 0 0; background-color: #0D2342; }
+        .card-content { padding: 20px; }
+        .item-code { font-size: 11px; color: var(--gold); letter-spacing: 2px; font-weight: 600; }
+        h2 { font-family: "Playfair Display", serif; font-size: 24px; color: #fff; margin: 5px 0 15px; }
+        .specs-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; font-size: 13px; }
+        .spec-item label { display: block; color: var(--gold); font-size: 9px; text-transform: uppercase; }
+        .price-main { font-size: 18px; color: var(--gold); font-weight: 600; }
+        .btn-luxury { background: var(--gold); color: #000; border: none; padding: 12px; width: 100%; font-weight: 600; cursor: pointer; border-radius: 3px; }
     </style>
 </head>
 <body>
-    <div class="luxury-header">
-        <div class="brand-logo-container">
-            <img src="https://pub-0ae76ea92a9d4cec8f2d5aace411ab7a.r2.dev/D3D0031F-0375-4B40-BD5F-E95052107138.png" alt="Logo">
-        </div>
-        <div class="luxury-tabs">
-            <div class="tab active" onclick="switchTab('fish')" id="tab-fish">The Fish</div>
-            <div class="tab" onclick="switchTab('shell')" id="tab-shell">Shell & Sea</div>
-        </div>
+    <div class="header">
+        <img src="https://pub-0ae76ea92a9d4cec8f2d5aace411ab7a.r2.dev/D3D0031F-0375-4B40-BD5F-E95052107138.png" class="logo" alt="āPO Logo">
     </div>
-    <div class="container">
+    <div class="container" id="app">
         <div id="loading" style="text-align:center; color:var(--gold);">LOADING...</div>
-        <div class="tab-content active" id="content-fish"></div>
-        <div class="tab-content" id="content-shell"></div>
+        <div id="content"></div>
     </div>
     <script>
         const API_URL = "https://script.google.com/macros/s/AKfycbwWBH-Bcvh8W6LNLbLMIkQxizQsAG6yNYnTUeoHV6aRIPT8VFa_N6AdQuDQCqtumsGxTA/exec";
@@ -54,40 +38,24 @@
                 const res = await fetch(API_URL);
                 const data = await res.json();
                 document.getElementById('loading').style.display = 'none';
-                render(data);
-            } catch (e) { document.getElementById('loading').innerText = "ERROR LOADING"; }
-        }
-        function switchTab(t) {
-            document.querySelectorAll(".tab").forEach(el => el.classList.remove("active"));
-            document.querySelectorAll(".tab-content").forEach(el => el.classList.remove("active"));
-            document.getElementById("tab-"+t).classList.add("active");
-            document.getElementById("content-"+t).classList.add("active");
-        }
-        function render(data) {
-            document.getElementById('content-fish').innerHTML = build(data.filter(s => s.category === "ปลา"));
-            document.getElementById('content-shell').innerHTML = build(data.filter(s => s.category === "หอย/ทะเล"));
-        }
-        function build(list) {
-            return list.map(s => {
-                const isRes = s.status === "จองแล้ว";
-                const msg = encodeURIComponent(`สนใจสั่งซื้อ ${s.name} รหัส ${s.code}`);
-                const img = s.image ? `style="background-image: url('${s.image}');"` : '';
-                return `<div class="luxury-card">
-                    <div class="card-visual" ${img} onerror="this.style.backgroundImage='none'"></div>
-                    <div class="card-content">
-                        <span class="item-code">${s.code}</span>
-                        <h2>${s.name}</h2>
-                        <div class="specs-grid">
-                            <div class="spec-item"><label>Weight</label><span>${s.weight} kg</span></div>
-                            <div class="spec-item price-main"><label>Total</label><span>${(s.weight * s.priceKg).toLocaleString()} ฿</span></div>
+                document.getElementById('content').innerHTML = data.map(s => {
+                    const msg = encodeURIComponent(`สนใจสั่งซื้อ ${s.name} รหัส ${s.code}`);
+                    return `<div class="luxury-card">
+                        <div class="card-visual" style="background-image: url('${s.image || ''}')"></div>
+                        <div class="card-content">
+                            <span class="item-code">${s.code}</span>
+                            <h2>${s.name}</h2>
+                            <div class="specs-grid">
+                                <div><label>Weight</label>${s.weight} kg</div>
+                                <div><label>Origin</label>${s.source}</div>
+                                <div><label>Price/kg</label>${parseInt(s.priceKg).toLocaleString()} ฿</div>
+                                <div class="price-main"><label>Total</label>${(s.weight * s.priceKg).toLocaleString()} ฿</div>
+                            </div>
+                            <button class="btn-luxury" onclick="window.open('https://line.me/R/oaMessage/@885iivsu/?${msg}')">ORDER NOW</button>
                         </div>
-                        <div class="card-footer">
-                            <span style="opacity:0.5; font-size:12px;">${s.date}</span>
-                            ${isRes ? '<button class="btn-luxury disabled">RESERVED</button>' : `<button class="btn-luxury" onclick="window.open('https://line.me/R/oaMessage/@885iivsu/?${msg}')">ORDER NOW</button>`}
-                        </div>
-                    </div>
-                </div>`;
-            }).join('');
+                    </div>`;
+                }).join('');
+            } catch (e) { document.getElementById('loading').innerText = "ERROR"; }
         }
         fetchStocks();
     </script>
