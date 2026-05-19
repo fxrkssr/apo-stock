@@ -9,8 +9,9 @@
         :root { --gold: #AF9500; --dark-bg: #0D2342; --card-bg: #122C52; --champagne: #E2D1C3; }
         * { margin:0; padding:0; box-sizing:border-box; }
         html, body { background: var(--dark-bg); color: var(--champagne); font-family: "Montserrat", "Sarabun", sans-serif; }
-        .header { padding: 40px 20px 20px; text-align: center; }
-        .logo { width: 150px; height: 150px; border-radius: 50%; border: 2px solid var(--gold); object-fit: cover; margin-bottom: 10px; }
+        .header { padding: 40px 20px 30px; text-align: center; }
+        /* บังคับขนาดโลโก้ให้ใหญ่ขึ้นชัดเจน */
+        .logo { width: 180px !important; height: 180px !important; border-radius: 50%; border: 3px solid var(--gold); object-fit: cover; margin-bottom: 20px; display: block; margin-left: auto; margin-right: auto; }
         .container { max-width: 500px; margin: 0 auto; padding: 0 16px 40px; }
         .luxury-card { background: var(--card-bg); border-radius: 4px; margin-bottom: 35px; border: 1px solid rgba(175, 149, 0, 0.2); }
         .card-visual { height: 280px; background-size: cover; background-position: center; border-radius: 4px 4px 0 0; background-color: #0D2342; }
@@ -25,7 +26,7 @@
 </head>
 <body>
     <div class="header">
-        <img src="https://pub-0ae76ea92a9d4cec8f2d5aace411ab7a.r2.dev/D3D0031F-0375-4B40-BD5F-E95052107138.png" class="logo" alt="āPO Logo">
+        <img src="https://pub-0ae76ea92a9d4cec8f2d5aace411ab7a.r2.dev/D3D0031F-0375-4B40-BD5F-E95052107138.png?v=2" class="logo" alt="āPO Logo">
     </div>
     <div class="container" id="app">
         <div id="loading" style="text-align:center; color:var(--gold);">LOADING...</div>
