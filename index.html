@@ -9,10 +9,18 @@
         :root { --gold: #AF9500; --dark-bg: #0D2342; --card-bg: #122C52; --champagne: #E2D1C3; }
         * { margin:0; padding:0; box-sizing:border-box; }
         html, body { background: var(--dark-bg); color: var(--champagne); font-family: "Montserrat", "Sarabun", sans-serif; }
-        .header { padding: 40px 20px 30px; text-align: center; }
-        /* บังคับขนาดโลโก้ให้ใหญ่ขึ้นชัดเจน */
-        .logo { width: 180px !important; height: 180px !important; border-radius: 50%; border: 3px solid var(--gold); object-fit: cover; margin-bottom: 20px; display: block; margin-left: auto; margin-right: auto; }
+        .header { padding: 40px 20px 20px; text-align: center; }
+        .logo { width: 180px; height: 180px; border-radius: 50%; border: 3px solid var(--gold); object-fit: cover; margin-bottom: 20px; }
+        
+        /* Tab Styles */
+        .tabs { display: flex; justify-content: center; gap: 40px; margin-bottom: 30px; border-bottom: 1px solid rgba(175, 149, 0, 0.2); padding-bottom: 15px; }
+        .tab-btn { color: rgba(226, 209, 195, 0.5); cursor: pointer; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; font-weight: 600; }
+        .tab-btn.active { color: var(--gold); border-bottom: 2px solid var(--gold); }
+        
         .container { max-width: 500px; margin: 0 auto; padding: 0 16px 40px; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
         .luxury-card { background: var(--card-bg); border-radius: 4px; margin-bottom: 35px; border: 1px solid rgba(175, 149, 0, 0.2); }
         .card-visual { height: 280px; background-size: cover; background-position: center; border-radius: 4px 4px 0 0; background-color: #0D2342; }
         .card-content { padding: 20px; }
@@ -27,36 +35,60 @@
 <body>
     <div class="header">
         <img src="https://pub-0ae76ea92a9d4cec8f2d5aace411ab7a.r2.dev/D3D0031F-0375-4B40-BD5F-E95052107138.png?v=2" class="logo" alt="āPO Logo">
+        <div class="tabs">
+            <div class="tab-btn active" onclick="showTab('fish')">The Fish</div>
+            <div class="tab-btn" onclick="showTab('shell')">Shell & Sea</div>
+        </div>
     </div>
-    <div class="container" id="app">
+    
+    <div class="container">
         <div id="loading" style="text-align:center; color:var(--gold);">LOADING...</div>
-        <div id="content"></div>
+        <div id="content-fish" class="tab-content active"></div>
+        <div id="content-shell" class="tab-content"></div>
     </div>
+
     <script>
         const API_URL = "https://script.google.com/macros/s/AKfycbwWBH-Bcvh8W6LNLbLMIkQxizQsAG6yNYnTUeoHV6aRIPT8VFa_N6AdQuDQCqtumsGxTA/exec";
+        
+        function showTab(type) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(cont => cont.classList.remove('active'));
+            event.currentTarget.classList.add('active');
+            document.getElementById('content-' + type).classList.add('active');
+        }
+
         async function fetchStocks() {
             try {
                 const res = await fetch(API_URL);
                 const data = await res.json();
                 document.getElementById('loading').style.display = 'none';
-                document.getElementById('content').innerHTML = data.map(s => {
-                    const msg = encodeURIComponent(`สนใจสั่งซื้อ ${s.name} รหัส ${s.code}`);
-                    return `<div class="luxury-card">
-                        <div class="card-visual" style="background-image: url('${s.image || ''}')"></div>
-                        <div class="card-content">
-                            <span class="item-code">${s.code}</span>
-                            <h2>${s.name}</h2>
-                            <div class="specs-grid">
-                                <div><label>Weight</label>${s.weight} kg</div>
-                                <div><label>Origin</label>${s.source}</div>
-                                <div><label>Price/kg</label>${parseInt(s.priceKg).toLocaleString()} ฿</div>
-                                <div class="price-main"><label>Total</label>${(s.weight * s.priceKg).toLocaleString()} ฿</div>
-                            </div>
-                            <button class="btn-luxury" onclick="window.open('https://line.me/R/oaMessage/@885iivsu/?${msg}')">ORDER NOW</button>
+                
+                const fishData = data.filter(s => s.category === "ปลา");
+                const shellData = data.filter(s => s.category === "หอย/ทะเล");
+
+                document.getElementById('content-fish').innerHTML = buildCards(fishData);
+                document.getElementById('content-shell').innerHTML = buildCards(shellData);
+            } catch (e) { document.getElementById('loading').innerText = "ERROR LOADING"; }
+        }
+
+        function buildCards(list) {
+            return list.map(s => {
+                const msg = encodeURIComponent(`สนใจสั่งซื้อ ${s.name} รหัส ${s.code}`);
+                return `<div class="luxury-card">
+                    <div class="card-visual" style="background-image: url('${s.image || ''}')"></div>
+                    <div class="card-content">
+                        <span class="item-code">${s.code}</span>
+                        <h2>${s.name}</h2>
+                        <div class="specs-grid">
+                            <div><label>Weight</label>${s.weight} kg</div>
+                            <div><label>Origin</label>${s.source}</div>
+                            <div><label>Price/kg</label>${parseInt(s.priceKg).toLocaleString()} ฿</div>
+                            <div class="price-main"><label>Total</label>${(s.weight * s.priceKg).toLocaleString()} ฿</div>
                         </div>
-                    </div>`;
-                }).join('');
-            } catch (e) { document.getElementById('loading').innerText = "ERROR"; }
+                        <button class="btn-luxury" onclick="window.open('https://line.me/R/oaMessage/@885iivsu/?${msg}')">ORDER NOW</button>
+                    </div>
+                </div>`;
+            }).join('');
         }
         fetchStocks();
     </script>
