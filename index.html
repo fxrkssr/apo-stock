@@ -14,9 +14,9 @@
         
         .header { padding: 40px 20px; text-align: center; }
         
-        /* โลโก้แบบไม่มีกรอบ ปรับขนาดง่าย */
+        /* โลโก้ใหม่ (ใส่ลิงก์ใหม่แล้ว) */
         .logo-container {
-            width: 250px; /* น้าปรับเลขตรงนี้เพื่อเพิ่ม/ลดขนาด Logo ได้เลยค่ะ */
+            width: 250px; 
             margin: 0 auto 30px;
             display: flex;
             justify-content: center;
@@ -24,7 +24,7 @@
         }
         .logo-img { width: 100%; height: auto; object-fit: contain; }
 
-        /* แท็บเมนู */
+        /* ส่วนประกอบอื่นๆ ยังคงความหรูหราเหมือนเดิมค่ะ */
         .tabs-container { display: flex; justify-content: center; gap: 40px; margin-bottom: 30px; border-bottom: 1px solid rgba(175, 149, 0, 0.2); padding-bottom: 12px; }
         .tab-trigger { color: rgba(226, 209, 195, 0.4); cursor: pointer; font-size: 14px; text-transform: uppercase; letter-spacing: 3px; font-weight: 600; position: relative; }
         .tab-trigger.active { color: var(--gold); }
@@ -34,13 +34,11 @@
         .tab-panel { display: none; }
         .tab-panel.active { display: block; }
         
-        /* การ์ดสินค้า */
         .product-card { background: var(--card-navy); border: 1px solid rgba(175, 149, 0, 0.15); border-radius: 2px; margin-bottom: 30px; overflow: hidden; }
         .product-image { height: 280px; background-size: cover; background-position: center; }
         .product-info { padding: 25px; }
         h2 { font-family: 'Playfair Display', serif; font-size: 24px; color: var(--white); margin: 10px 0 20px; }
         
-        /* ตารางสเปค แยกซ้ายขวาชัดเจน */
         .specs-grid { display: grid; gap: 12px; margin-bottom: 25px; border-top: 1px solid rgba(226, 209, 195, 0.1); padding-top: 15px; }
         .spec-row { display: flex; justify-content: space-between; align-items: center; font-size: 14px; }
         .spec-label { color: var(--gold); font-size: 10px; text-transform: uppercase; font-weight: 600; }
@@ -52,7 +50,7 @@
 <body>
     <header class="header">
         <div class="logo-container">
-            <img src="https://pub-0ae76ea92a9d4cec8f2d5aace411ab7a.r2.dev/D3D0031F-0375-4B40-BD5F-E95052107138.png?v=12" class="logo-img" alt="āPO Logo">
+            <img src="https://pub-0ae76ea92a9d4cec8f2d5aace411ab7a.r2.dev/logo%20apo.png" class="logo-img" alt="āPO Logo">
         </div>
         <nav class="tabs-container">
             <div class="tab-trigger active" onclick="switchTab('fish', this)">The Fish</div>
