@@ -2,11 +2,10 @@
 <html lang="th">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>āPO — Handpicked Seafood</title>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Montserrat:wght@300;400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    
     <style>
         :root { --gold: #AF9500; --dark-blue: #0D2342; --card-navy: #122C52; --champagne: #E2D1C3; --white: #FFFFFF; }
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -14,15 +13,28 @@
         
         .header { padding: 40px 20px; text-align: center; }
         
-        /* โลโก้ใหม่: อยู่ตรงกลางเป๊ะ */
+        /* แก้ไขปัญหาโลโก้ไม่เซ็นเตอร์ */
         .logo-circle {
-            width: 140px; height: 140px; border-radius: 50%; border: 1.5px solid var(--gold);
-            margin: 0 auto 25px; overflow: hidden; display: flex; align-items: center; justify-content: center;
+            width: 140px; 
+            height: 140px; 
+            border-radius: 50%; 
+            border: 1.5px solid var(--gold);
+            margin: 0 auto 25px; 
+            overflow: hidden; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center;
             background: var(--card-navy);
         }
-        .logo-img { width: 180%; height: 180%; object-fit: contain; object-position: center; }
+        
+        /* ปรับให้รูปขยายและบังคับให้อยู่ตรงกลางด้วย object-position */
+        .logo-img { 
+            width: 100%; 
+            height: 100%; 
+            object-fit: cover; 
+            object-position: center center; /* นี่คือหัวใจสำคัญที่แก้ปัญหาเยื้องค่ะ */
+        }
 
-        /* แท็บเมนู */
         .tabs-container { display: flex; justify-content: center; gap: 40px; margin-bottom: 30px; border-bottom: 1px solid rgba(175, 149, 0, 0.2); padding-bottom: 12px; }
         .tab-trigger { color: rgba(226, 209, 195, 0.4); cursor: pointer; font-size: 14px; text-transform: uppercase; letter-spacing: 3px; font-weight: 600; position: relative; }
         .tab-trigger.active { color: var(--gold); }
@@ -32,13 +44,11 @@
         .tab-panel { display: none; }
         .tab-panel.active { display: block; }
         
-        /* การ์ดสินค้า */
         .product-card { background: var(--card-navy); border: 1px solid rgba(175, 149, 0, 0.15); border-radius: 2px; margin-bottom: 30px; overflow: hidden; }
         .product-image { height: 280px; background-size: cover; background-position: center; }
         .product-info { padding: 25px; }
         h2 { font-family: 'Playfair Display', serif; font-size: 24px; color: var(--white); margin: 10px 0 20px; }
         
-        /* ตารางสเปค */
         .specs-grid { display: grid; gap: 12px; margin-bottom: 25px; border-top: 1px solid rgba(226, 209, 195, 0.1); padding-top: 15px; }
         .spec-row { display: flex; justify-content: space-between; align-items: center; font-size: 14px; }
         .spec-label { color: var(--gold); font-size: 10px; text-transform: uppercase; font-weight: 600; }
@@ -50,7 +60,7 @@
 <body>
     <header class="header">
         <div class="logo-circle">
-            <img src="https://pub-0ae76ea92a9d4cec8f2d5aace411ab7a.r2.dev/D3D0031F-0375-4B40-BD5F-E95052107138.png?v=9" class="logo-img" alt="āPO Logo">
+            <img src="https://pub-0ae76ea92a9d4cec8f2d5aace411ab7a.r2.dev/D3D0031F-0375-4B40-BD5F-E95052107138.png?v=10" class="logo-img" alt="āPO Logo">
         </div>
         <nav class="tabs-container">
             <div class="tab-trigger active" onclick="switchTab('fish', this)">The Fish</div>
