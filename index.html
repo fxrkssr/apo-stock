@@ -4,102 +4,97 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>āPO — Handpicked Seafood</title>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Montserrat:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
     <style>
-        :root { --gold: #AF9500; --dark-bg: #0D2342; --card-bg: #122C52; --champagne: #E2D1C3; }
-        * { margin:0; padding:0; box-sizing:border-box; }
-        body { background: var(--dark-bg); color: var(--champagne); font-family: "Montserrat", sans-serif; padding-bottom: 50px; }
+        :root { --gold: #AF9500; --dark-blue: #0D2342; --card-navy: #122C52; --champagne: #E2D1C3; --white: #FFFFFF; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: var(--dark-blue); color: var(--champagne); font-family: 'Montserrat', sans-serif; padding-bottom: 50px; }
         
-        .header { padding: 30px 20px 20px; text-align: center; }
+        .header { padding: 40px 20px; text-align: center; }
         
-        /* ปรับโลโก้: ขนาดวงกลมเล็กลง แต่ซูมรูปข้างในให้ใหญ่ขึ้น */
-        .logo-container {
-            width: 140px; /* ลดขนาดรวมของวงกลม (เดิม 160px) */
-            height: 140px;
-            border-radius: 50%;
-            border: 1.5px solid var(--gold);
-            overflow: hidden; /* บังคับให้รูปที่ซูมอยู่แค่ในวงกลม */
-            margin: 0 auto 20px; /* จัดกึ่งกลางและเว้นระยะล่าง */
-            display: flex;
-            justify-content: center;
-            align-items: center;
+        /* โลโก้ใหม่: อยู่ตรงกลางเป๊ะ */
+        .logo-circle {
+            width: 140px; height: 140px; border-radius: 50%; border: 1.5px solid var(--gold);
+            margin: 0 auto 25px; overflow: hidden; display: flex; align-items: center; justify-content: center;
+            background: var(--card-navy);
         }
+        .logo-img { width: 180%; height: 180%; object-fit: contain; object-position: center; }
 
-        .logo {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            transform: scale(2.0); /* ขยายรูปข้างในให้ใหญ่ขึ้น 10% (เดิมคือ 1.0) */
-            transition: transform 0.3s; /* เพิ่มความนุ่มนวลเวลาโหลด */
-        }
-        
-        .tabs { display: flex; justify-content: center; gap: 30px; margin-bottom: 25px; border-bottom: 1px solid rgba(175, 149, 0, 0.2); padding-bottom: 10px; }
-        .tab-btn { color: rgba(226, 209, 195, 0.4); cursor: pointer; font-size: 13px; text-transform: uppercase; letter-spacing: 2px; font-weight: 600; padding-bottom: 5px; }
-        .tab-btn.active { color: var(--gold); border-bottom: 2px solid var(--gold); }
-        
+        /* แท็บเมนู */
+        .tabs-container { display: flex; justify-content: center; gap: 40px; margin-bottom: 30px; border-bottom: 1px solid rgba(175, 149, 0, 0.2); padding-bottom: 12px; }
+        .tab-trigger { color: rgba(226, 209, 195, 0.4); cursor: pointer; font-size: 14px; text-transform: uppercase; letter-spacing: 3px; font-weight: 600; position: relative; }
+        .tab-trigger.active { color: var(--gold); }
+        .tab-trigger.active::after { content: ''; position: absolute; bottom: -13px; left: 0; width: 100%; height: 2px; background: var(--gold); }
+
         .container { max-width: 500px; margin: 0 auto; padding: 0 16px; }
-        .tab-content { display: none; }
-        .tab-content.active { display: block; }
+        .tab-panel { display: none; }
+        .tab-panel.active { display: block; }
         
-        .luxury-card { background: var(--card-bg); border-radius: 4px; margin-bottom: 30px; border: 1px solid rgba(175, 149, 0, 0.15); overflow: hidden; }
-        .card-visual { height: 250px; background-size: cover; background-position: center; }
-        .card-content { padding: 20px; }
-        h2 { font-family: "Playfair Display", serif; font-size: 22px; color: #fff; margin-bottom: 15px; }
-        .specs-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; font-size: 12px; }
-        .spec-item { color: var(--gold); font-size: 9px; text-transform: uppercase; }
-        .price-main { color: var(--gold); font-size: 16px; font-weight: 600; }
-        .btn-luxury { background: var(--gold); color: #000; border: none; padding: 12px; width: 100%; font-weight: 600; cursor: pointer; border-radius: 3px; }
+        /* การ์ดสินค้า */
+        .product-card { background: var(--card-navy); border: 1px solid rgba(175, 149, 0, 0.15); border-radius: 2px; margin-bottom: 30px; overflow: hidden; }
+        .product-image { height: 280px; background-size: cover; background-position: center; }
+        .product-info { padding: 25px; }
+        h2 { font-family: 'Playfair Display', serif; font-size: 24px; color: var(--white); margin: 10px 0 20px; }
+        
+        /* ตารางสเปค */
+        .specs-grid { display: grid; gap: 12px; margin-bottom: 25px; border-top: 1px solid rgba(226, 209, 195, 0.1); padding-top: 15px; }
+        .spec-row { display: flex; justify-content: space-between; align-items: center; font-size: 14px; }
+        .spec-label { color: var(--gold); font-size: 10px; text-transform: uppercase; font-weight: 600; }
+        .price-highlight { color: var(--gold); font-weight: 700; font-size: 18px; }
+        
+        .order-btn { background: var(--gold); color: #000; border: none; padding: 15px; width: 100%; font-weight: 700; text-transform: uppercase; cursor: pointer; }
     </style>
 </head>
 <body>
-    <div class="header">
-        <div class="logo-container">
-            <img src="https://pub-0ae76ea92a9d4cec8f2d5aace411ab7a.r2.dev/D3D0031F-0375-4B40-BD5F-E95052107138.png?v=7" class="logo" alt="āPO Logo">
+    <header class="header">
+        <div class="logo-circle">
+            <img src="https://pub-0ae76ea92a9d4cec8f2d5aace411ab7a.r2.dev/D3D0031F-0375-4B40-BD5F-E95052107138.png?v=9" class="logo-img" alt="āPO Logo">
         </div>
-        <div class="tabs">
-            <div class="tab-btn active" onclick="showTab('fish', this)">The Fish</div>
-            <div class="tab-btn" onclick="showTab('shell', this)">Shell & Sea</div>
-        </div>
-    </div>
+        <nav class="tabs-container">
+            <div class="tab-trigger active" onclick="switchTab('fish', this)">The Fish</div>
+            <div class="tab-trigger" onclick="switchTab('shell', this)">Shell & Sea</div>
+        </nav>
+    </header>
+
     <div class="container">
-        <div id="content-fish" class="tab-content active"></div>
-        <div id="content-shell" class="tab-content"></div>
+        <div id="panel-fish" class="tab-panel active"></div>
+        <div id="panel-shell" class="tab-panel"></div>
     </div>
 
     <script>
-        const API_URL = "https://script.google.com/macros/s/AKfycbwWBH-Bcvh8W6LNLbLMIkQxizQsAG6yNYnTUeoHV6aRIPT8VFa_N6AdQuDQCqtumsGxTA/exec";
-        function showTab(type, el) {
-            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-            document.querySelectorAll('.tab-content').forEach(cont => cont.classList.remove('active'));
-            el.classList.add('active');
-            document.getElementById('content-' + type).classList.add('active');
+        const API = "https://script.google.com/macros/s/AKfycbwWBH-Bcvh8W6LNLbLMIkQxizQsAG6yNYnTUeoHV6aRIPT8VFa_N6AdQuDQCqtumsGxTA/exec";
+        function switchTab(target, btn) {
+            document.querySelectorAll('.tab-trigger').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+            btn.classList.add('active');
+            document.getElementById('panel-' + target).classList.add('active');
         }
-        async function fetchStocks() {
-            try {
-                const res = await fetch(API_URL);
-                const data = await res.json();
-                document.getElementById('content-fish').innerHTML = buildCards(data.filter(s => s.category === "ปลา"));
-                document.getElementById('content-shell').innerHTML = buildCards(data.filter(s => s.category === "หอย/ทะเล"));
-            } catch (e) { console.error(e); }
+        async function loadData() {
+            const res = await fetch(API);
+            const items = await res.json();
+            document.getElementById('panel-fish').innerHTML = render(items.filter(i => i.category === "ปลา"));
+            document.getElementById('panel-shell').innerHTML = render(items.filter(i => i.category === "หอย/ทะเล"));
         }
-        function buildCards(list) {
-            return list.map(s => `
-                <div class="luxury-card">
-                    <div class="card-visual" style="background-image: url('${s.image || ''}')"></div>
-                    <div class="card-content">
-                        <small style="color:var(--gold)">${s.code}</small>
-                        <h2>${s.name}</h2>
+        function render(data) {
+            return data.map(item => `
+                <article class="product-card">
+                    <div class="product-image" style="background-image: url('${item.image}')"></div>
+                    <div class="product-info">
+                        <small style="color:var(--gold)">${item.code}</small>
+                        <h2>${item.name}</h2>
                         <div class="specs-grid">
-                            <div><div class="spec-item">Weight</div>${s.weight} kg</div>
-                            <div><div class="spec-item">Origin</div>${s.source}</div>
-                            <div><div class="spec-item">Price/kg</div>${parseInt(s.priceKg).toLocaleString()} ฿</div>
-                            <div class="price-main"><div class="spec-item">Total</div>${(s.weight * s.priceKg).toLocaleString()} ฿</div>
+                            <div class="spec-row"><span class="spec-label">Weight</span><span>${item.weight} kg</span></div>
+                            <div class="spec-row"><span class="spec-label">Origin</span><span>${item.source}</span></div>
+                            <div class="spec-row"><span class="spec-label">Price / kg</span><span>${parseInt(item.priceKg).toLocaleString()} ฿</span></div>
+                            <div class="spec-row"><span class="spec-label">Total Amount</span><span class="price-highlight">${(item.weight * item.priceKg).toLocaleString()} ฿</span></div>
                         </div>
-                        <button class="btn-luxury" onclick="window.open('https://line.me/R/oaMessage/@885iivsu/?สนใจสั่งซื้อ ${s.name} รหัส ${s.code}')">ORDER NOW</button>
+                        <button class="order-btn" onclick="window.open('https://line.me/R/oaMessage/@885iivsu/?สนใจสั่งซื้อ ${item.name} รหัส ${item.code}')">Order Now</button>
                     </div>
-                </div>`).join('');
+                </article>`).join('');
         }
-        fetchStocks();
+        loadData();
     </script>
 </body>
 </html>
