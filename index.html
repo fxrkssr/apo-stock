@@ -14,17 +14,20 @@
         
         .header { padding: 40px 20px; text-align: center; }
         
-        /* โลโก้ใหม่ (ใส่ลิงก์ใหม่แล้ว) */
+        /* โลโก้แบบกลมกลืนกับพื้นหลัง */
         .logo-container {
             width: 250px; 
             margin: 0 auto 30px;
             display: flex;
             justify-content: center;
             align-items: center;
+            background-color: #0D2342; /* สีเดียวกับพื้นหลังเว็บ */
+            border-radius: 50%;
+            overflow: hidden;
         }
-        .logo-img { width: 100%; height: auto; object-fit: contain; }
+        .logo-img { width: 100%; height: auto; object-fit: contain; opacity: 0.9; }
 
-        /* ส่วนประกอบอื่นๆ ยังคงความหรูหราเหมือนเดิมค่ะ */
+        /* แท็บเมนู */
         .tabs-container { display: flex; justify-content: center; gap: 40px; margin-bottom: 30px; border-bottom: 1px solid rgba(175, 149, 0, 0.2); padding-bottom: 12px; }
         .tab-trigger { color: rgba(226, 209, 195, 0.4); cursor: pointer; font-size: 14px; text-transform: uppercase; letter-spacing: 3px; font-weight: 600; position: relative; }
         .tab-trigger.active { color: var(--gold); }
@@ -34,11 +37,13 @@
         .tab-panel { display: none; }
         .tab-panel.active { display: block; }
         
+        /* การ์ดสินค้า */
         .product-card { background: var(--card-navy); border: 1px solid rgba(175, 149, 0, 0.15); border-radius: 2px; margin-bottom: 30px; overflow: hidden; }
         .product-image { height: 280px; background-size: cover; background-position: center; }
         .product-info { padding: 25px; }
         h2 { font-family: 'Playfair Display', serif; font-size: 24px; color: var(--white); margin: 10px 0 20px; }
         
+        /* สเปคสินค้า */
         .specs-grid { display: grid; gap: 12px; margin-bottom: 25px; border-top: 1px solid rgba(226, 209, 195, 0.1); padding-top: 15px; }
         .spec-row { display: flex; justify-content: space-between; align-items: center; font-size: 14px; }
         .spec-label { color: var(--gold); font-size: 10px; text-transform: uppercase; font-weight: 600; }
