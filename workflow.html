@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>āPO — Project Workflow</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Montserrat:wght@300;400;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <style>
+    :root {
+      --dark: #0d1117;
+      --card: #161b22;
+      --border: #30363d;
+      --accent: #c9a96e;
+      --accent2: #7ee8a2;
+      --accent3: #79c0ff;
+      --accent4: #f78166;
+      --text: #e6edf3;
+      --muted: #8b949e;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--dark);
+      color: var(--text);
+      font-family: 'Montserrat', sans-serif;
+      min-height: 100vh;
+      padding: 48px 24px;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 56px;
+    }
+
+    header h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: 2.4rem;
+      color: var(--accent);
+      letter-spacing: 0.1em;
+    }
+
+    header p {
+      margin-top: 8px;
+      color: var(--muted);
+      font-size: 0.85rem;
+      font-weight: 300;
+      letter-spacing: 0.05em;
+    }
+
+    /* ── SECTION LABELS ── */
+    .section-label {
+      text-align: center;
+      font-size: 0.7rem;
+      font-weight: 600;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 16px;
+    }
+
+    /* ── FLOW WRAPPER ── */
+    .flow {
+      max-width: 780px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+
+    /* ── LANE ── */
+    .lane {
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 24px 28px;
+      background: var(--card);
+      position: relative;
+    }
+
+    .lane-title {
+      font-size: 0.68rem;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      margin-bottom: 18px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .lane-title i { font-size: 0.85rem; }
+
+    .lane-title.dev   { color: var(--accent3); }
+    .lane-title.ci    { color: var(--accent); }
+    .lane-title.data  { color: var(--accent2); }
+    .lane-title.user  { color: var(--accent4); }
+
+    /* ── STEPS ROW ── */
+    .steps {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .step {
+      background: var(--dark);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 16px;
+      font-size: 0.8rem;
+      line-height: 1.5;
+      min-width: 130px;
+      flex: 1;
+    }
+
+    .step .icon {
+      font-size: 1.1rem;
+      margin-bottom: 6px;
+      display: block;
+    }
+
+    .step .label {
+      font-weight: 600;
+      font-size: 0.78rem;
+      display: block;
+      margin-bottom: 2px;
+    }
+
+    .step .sub {
+      color: var(--muted);
+      font-size: 0.7rem;
+    }
+
+    .step.blue  { border-color: #2d4a6b; }
+    .step.gold  { border-color: #6b5229; }
+    .step.green { border-color: #1e4d35; }
+    .step.red   { border-color: #6b2d2d; }
+    .step.ok    { border-color: #1e4d35; background: #0d2318; }
+    .step.fail  { border-color: #6b2d2d; background: #1a0d0d; }
+
+    /* ── ARROW ── */
+    .arrow {
+      color: var(--muted);
+      font-size: 0.85rem;
+      flex-shrink: 0;
+      padding: 0 2px;
+    }
+
+    /* ── CONNECTOR (between lanes) ── */
+    .connector {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 36px;
+      color: var(--muted);
+      font-size: 1rem;
+      position: relative;
+    }
+
+    .connector::before,
+    .connector::after {
+      content: '';
+      position: absolute;
+      left: 50%;
+      width: 1px;
+      background: var(--border);
+    }
+
+    .connector::before { top: 0; height: 12px; }
+    .connector::after  { bottom: 0; height: 12px; }
+
+    .connector span {
+      background: var(--dark);
+      padding: 0 8px;
+      font-size: 0.7rem;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      z-index: 1;
+    }
+
+    /* ── BADGE ── */
+    .badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 20px;
+      font-size: 0.62rem;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      margin-left: 6px;
+      vertical-align: middle;
+    }
+
+    .badge.auto { background: #1e3a2d; color: var(--accent2); }
+    .badge.manual { background: #3a2d1e; color: var(--accent); }
+
+    /* ── RESOURCES TABLE ── */
+    .resources {
+      max-width: 780px;
+      margin: 40px auto 0;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      overflow: hidden;
+    }
+
+    .resources-title {
+      background: var(--card);
+      padding: 12px 20px;
+      font-size: 0.68rem;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .resources table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .resources td {
+      padding: 10px 20px;
+      font-size: 0.75rem;
+      border-bottom: 1px solid var(--border);
+      vertical-align: middle;
+    }
+
+    .resources tr:last-child td { border-bottom: none; }
+
+    .resources td:first-child {
+      color: var(--muted);
+      white-space: nowrap;
+      width: 180px;
+      font-weight: 600;
+    }
+
+    .resources a {
+      color: var(--accent3);
+      text-decoration: none;
+      word-break: break-all;
+      font-size: 0.72rem;
+    }
+
+    .resources a:hover { text-decoration: underline; }
+
+    /* ── LEGEND ── */
+    .legend {
+      max-width: 780px;
+      margin: 40px auto 0;
+      display: flex;
+      gap: 24px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.72rem;
+      color: var(--muted);
+    }
+
+    .legend-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+
+    /* ── FOOTNOTE ── */
+    footer {
+      text-align: center;
+      margin-top: 48px;
+      color: var(--muted);
+      font-size: 0.7rem;
+      letter-spacing: 0.05em;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>āPO</h1>
+  <p>Project Workflow — ขั้นตอนการทำงานของระบบ</p>
+</header>
+
+<div class="flow">
+
+  <!-- LANE 1: ชาวประมง -->
+  <div class="lane">
+    <div class="lane-title" style="color:#f0a04b;">
+      <i class="fa-solid fa-fish"></i> ชาวประมง (Fisherman)
+      <span class="badge manual">manual</span>
+    </div>
+    <div class="steps">
+      <div class="step" style="border-color:#5a3a1a;">
+        <span class="icon">📝</span>
+        <span class="label">กรอก Google Form</span>
+        <span class="sub">ชื่อปลา, น้ำหนัก, วันจับ, รูป</span>
+      </div>
+      <div class="arrow"><i class="fa-solid fa-arrow-right"></i></div>
+      <div class="step" style="border-color:#5a3a1a;">
+        <span class="icon">📊</span>
+        <span class="label">ข้อมูลลง Sheets</span>
+        <span class="sub">Sheet "Stock จากชาวประมง"</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="connector"><span>admin reviews</span></div>
+
+  <!-- LANE 2: Admin -->
+  <div class="lane">
+    <div class="lane-title" style="color:#a78bfa;">
+      <i class="fa-solid fa-user-shield"></i> Admin (āPO)
+      <span class="badge manual">manual</span>
+    </div>
+    <div class="steps">
+      <div class="step" style="border-color:#3a2d5a;">
+        <span class="icon">🐟</span>
+        <span class="label">เมนู Apo Stock</span>
+        <span class="sub">"นำเข้าปลาจากชาวประมง"</span>
+      </div>
+      <div class="arrow"><i class="fa-solid fa-arrow-right"></i></div>
+      <div class="step" style="border-color:#3a2d5a;">
+        <span class="icon">✅</span>
+        <span class="label">เลือกปลา → Publish</span>
+        <span class="sub">flag "Publish แล้ว" + ย้ายไป Sheet 2</span>
+      </div>
+      <div class="arrow"><i class="fa-solid fa-arrow-right"></i></div>
+      <div class="step" style="border-color:#3a2d5a;">
+        <span class="icon">💰</span>
+        <span class="label">บันทึกการขาย</span>
+        <span class="sub">flag "ขายแล้ว" + ย้ายไป Sheet 3</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="connector"><span>feeds</span></div>
+
+  <!-- LANE 3: Data Layer -->
+  <div class="lane">
+    <div class="lane-title data">
+      <i class="fa-solid fa-database"></i> Data Layer
+      <span class="badge auto">auto</span>
+    </div>
+    <div class="steps">
+      <div class="step green">
+        <span class="icon">📋</span>
+        <span class="label">Sheet 2 — พร้อมขาย</span>
+        <span class="sub">Stock ที่จะขายให้ลูกค้า</span>
+      </div>
+      <div class="arrow"><i class="fa-solid fa-arrow-right"></i></div>
+      <div class="step green">
+        <span class="icon">⚙️</span>
+        <span class="label">Apps Script API</span>
+        <span class="sub">แปลง Sheets → JSON</span>
+      </div>
+      <div class="arrow"><i class="fa-solid fa-arrow-right"></i></div>
+      <div class="step green">
+        <span class="icon">🌐</span>
+        <span class="label">GitHub Pages</span>
+        <span class="sub">fxrkssr.github.io/apo-stock</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="connector"><span>viewed by</span></div>
+
+  <!-- LANE 4: ลูกค้า -->
+  <div class="lane">
+    <div class="lane-title user">
+      <i class="fa-solid fa-user"></i> ลูกค้า (End User)
+    </div>
+    <div class="steps">
+      <div class="step red">
+        <span class="icon">🐟</span>
+        <span class="label">เลือกสินค้า</span>
+        <span class="sub">ดูราคา / หมวดหมู่</span>
+      </div>
+      <div class="arrow"><i class="fa-solid fa-arrow-right"></i></div>
+      <div class="step red">
+        <span class="icon"><i class="fa-brands fa-line"></i></span>
+        <span class="label">สั่งซื้อผ่าน LINE</span>
+        <span class="sub">ส่งตรงถึงแม่ค้า</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="connector"><span>developer updates</span></div>
+
+  <!-- LANE 5: Developer / CI -->
+  <div class="lane">
+    <div class="lane-title dev">
+      <i class="fa-solid fa-code"></i> Developer + CI/CD
+    </div>
+    <div class="steps">
+      <div class="step blue">
+        <span class="icon">📄</span>
+        <span class="label">แก้ไข index.html</span>
+        <span class="sub">git push → main</span>
+      </div>
+      <div class="arrow"><i class="fa-solid fa-arrow-right"></i></div>
+      <div class="step gold">
+        <span class="icon">🔍</span>
+        <span class="label">GitHub Actions</span>
+        <span class="sub">validate HTML → deploy</span>
+      </div>
+      <div class="arrow"><i class="fa-solid fa-arrow-right"></i></div>
+      <div class="step ok">
+        <span class="icon">🚀</span>
+        <span class="label">GitHub Pages</span>
+        <span class="sub">อัปเดตอัตโนมัติ</span>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- LEGEND -->
+<div class="legend">
+  <div class="legend-item">
+    <div class="legend-dot" style="background:#f0a04b"></div>
+    ชาวประมง
+  </div>
+  <div class="legend-item">
+    <div class="legend-dot" style="background:#a78bfa"></div>
+    Admin
+  </div>
+  <div class="legend-item">
+    <div class="legend-dot" style="background:#7ee8a2"></div>
+    Data layer (auto)
+  </div>
+  <div class="legend-item">
+    <div class="legend-dot" style="background:#f78166"></div>
+    ลูกค้า
+  </div>
+  <div class="legend-item">
+    <div class="legend-dot" style="background:#79c0ff"></div>
+    Developer / CI
+  </div>
+</div>
+
+<!-- RESOURCES -->
+<div class="resources">
+  <div class="resources-title"><i class="fa-solid fa-link"></i> &nbsp;Resources — Links จริงของโปรเจกต์</div>
+  <table>
+    <tr>
+      <td>Google Form (ชาวประมง)</td>
+      <td><a href="https://forms.gle/oo5p5TmVtR49HijP7" target="_blank">https://forms.gle/oo5p5TmVtR49HijP7</a></td>
+    </tr>
+    <tr>
+      <td>Google Sheets (ข้อมูล)</td>
+      <td><a href="https://docs.google.com/spreadsheets/d/1681oFVd80odwKx_9mx5aG4-NOVLGIC7Sxu4RmwMr3mA/edit" target="_blank">spreadsheets/1681oFVd80odwKx_9mx5aG4-NOVLGIC7Sxu4RmwMr3mA</a></td>
+    </tr>
+    <tr>
+      <td>Apps Script API</td>
+      <td><a href="https://script.google.com/macros/s/AKfycbwWBH-Bcvh8W6LNLbLMIkQxizQsAG6yNYnTUeoHV6aRIPT8VFa_N6AdQuDQCqtumsGxTA/exec" target="_blank">script.google.com/macros/s/AKfycbw…/exec</a></td>
+    </tr>
+    <tr>
+      <td>GitHub Repo</td>
+      <td><a href="https://github.com/fxrkssr/apo-stock" target="_blank">github.com/fxrkssr/apo-stock</a></td>
+    </tr>
+    <tr>
+      <td>Website (GitHub Pages)</td>
+      <td><a href="https://fxrkssr.github.io/apo-stock/" target="_blank">fxrkssr.github.io/apo-stock</a></td>
+    </tr>
+    <tr>
+      <td>Logo (Cloudflare R2)</td>
+      <td><a href="https://pub-0ae76ea92a9d4cec8f2d5aace411ab7a.r2.dev/logo%20apo.png" target="_blank">pub-0ae76ea92a9d4cec8f2d5aace411ab7a.r2.dev/logo apo.png</a></td>
+    </tr>
+  </table>
+</div>
+
+<footer>
+  āPO Stock · GitHub Pages + Google Sheets + LINE · 2026
+</footer>
+
+</body>
+</html>

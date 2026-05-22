@@ -6,30 +6,40 @@
     <title>āPO — Handpicked Seafood</title>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Montserrat:wght@300;400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    
+
     <style>
         :root { --gold: #AF9500; --dark-blue: #0D2342; --card-navy: #122C52; --champagne: #E2D1C3; --white: #FFFFFF; }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { background: var(--dark-blue); color: var(--champagne); font-family: 'Montserrat', sans-serif; padding-bottom: 50px; }
-        
-        .header { padding: 40px 20px; text-align: center; }
-        
-        /* โลโก้แบบกลมกลืนกับพื้นหลัง */
+
+        .header { padding: 40px 20px 0; text-align: center; }
+
         .logo-container {
-    width: 100%;
-    max-width: 350px; 
-    margin: 0 auto 30px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background-color: #0D2342;
-    border-radius: 50%;
-    overflow: hidden;
-}
+            width: 100%;
+            max-width: 350px;
+            margin: 0 auto 30px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #0D2342;
+            border-radius: 50%;
+            overflow: hidden;
+        }
         .logo-img { width: 100%; height: auto; object-fit: contain; opacity: 0.9; }
 
-        /* แท็บเมนู */
-        .tabs-container { display: flex; justify-content: center; gap: 40px; margin-bottom: 30px; border-bottom: 1px solid rgba(175, 149, 0, 0.2); padding-bottom: 12px; }
+        /* แท็บเมนู — sticky */
+        .tabs-container {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: var(--dark-blue);
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin-bottom: 30px;
+            border-bottom: 1px solid rgba(175, 149, 0, 0.2);
+            padding: 14px 0 12px;
+        }
         .tab-trigger { color: rgba(226, 209, 195, 0.4); cursor: pointer; font-size: 14px; text-transform: uppercase; letter-spacing: 3px; font-weight: 600; position: relative; }
         .tab-trigger.active { color: var(--gold); }
         .tab-trigger.active::after { content: ''; position: absolute; bottom: -13px; left: 0; width: 100%; height: 2px; background: var(--gold); }
@@ -37,19 +47,19 @@
         .container { max-width: 500px; margin: 0 auto; padding: 0 16px; }
         .tab-panel { display: none; }
         .tab-panel.active { display: block; }
-        
+
         /* การ์ดสินค้า */
         .product-card { background: var(--card-navy); border: 1px solid rgba(175, 149, 0, 0.15); border-radius: 2px; margin-bottom: 30px; overflow: hidden; }
         .product-image { height: 280px; background-size: cover; background-position: center; }
         .product-info { padding: 25px; }
         h2 { font-family: 'Playfair Display', serif; font-size: 24px; color: var(--white); margin: 10px 0 20px; }
-        
+
         /* สเปคสินค้า */
         .specs-grid { display: grid; gap: 12px; margin-bottom: 25px; border-top: 1px solid rgba(226, 209, 195, 0.1); padding-top: 15px; }
         .spec-row { display: flex; justify-content: space-between; align-items: center; font-size: 14px; }
         .spec-label { color: var(--gold); font-size: 10px; text-transform: uppercase; font-weight: 600; }
         .price-highlight { color: var(--gold); font-weight: 700; font-size: 18px; }
-        
+
         .order-btn { background: var(--gold); color: #000; border: none; padding: 15px; width: 100%; font-weight: 700; text-transform: uppercase; cursor: pointer; }
     </style>
 </head>
@@ -58,11 +68,12 @@
         <div class="logo-container">
             <img src="https://pub-0ae76ea92a9d4cec8f2d5aace411ab7a.r2.dev/logo%20apo.png" class="logo-img" alt="āPO Logo">
         </div>
-        <nav class="tabs-container">
-            <div class="tab-trigger active" onclick="switchTab('fish', this)">The Fish</div>
-            <div class="tab-trigger" onclick="switchTab('shell', this)">Shell & Sea</div>
-        </nav>
     </header>
+
+    <nav class="tabs-container">
+        <div class="tab-trigger active" onclick="switchTab('fish', this)">The Fish</div>
+        <div class="tab-trigger" onclick="switchTab('shell', this)">Shell & Sea</div>
+    </nav>
 
     <div class="container">
         <div id="panel-fish" class="tab-panel active"></div>
