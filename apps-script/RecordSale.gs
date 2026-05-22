@@ -23,7 +23,8 @@ function getSalesData() {
       buyerName:  row[8],
       buyerPhone: row[9],
       salePrice:  row[10],
-      saleDate:   row[11]
+      saleDate:   row[11],
+      proofUrl:   row[12] || ""
     });
   });
   return result;
@@ -33,63 +34,192 @@ function getSalesSummaryHtml() {
   var h = '<!DOCTYPE html><html><head><meta charset="UTF-8"><style>';
   h += '* { margin:0; padding:0; box-sizing:border-box; }';
   h += 'body { font-family:sans-serif; font-size:13px; background:#0d1f3c; color:#e2d1c3; height:100vh; display:flex; flex-direction:column; overflow:hidden; }';
-  h += '.topbar { background:#071221; padding:14px 20px; border-bottom:1px solid rgba(175,149,0,0.2); flex-shrink:0; }';
+  h += '.topbar { background:#071221; padding:12px 20px; border-bottom:1px solid rgba(175,149,0,0.2); flex-shrink:0; }';
   h += '.topbar h2 { font-size:13px; color:#af9500; letter-spacing:0.08em; text-transform:uppercase; }';
-  h += '.stats { display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; padding:16px 20px; flex-shrink:0; }';
-  h += '.stat-box { background:#122c52; border:1px solid rgba(175,149,0,0.15); border-radius:8px; padding:14px 16px; }';
-  h += '.stat-label { font-size:10px; color:#af9500; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:6px; }';
-  h += '.stat-val { font-size:22px; font-weight:700; color:#fff; }';
-  h += '.stat-unit { font-size:12px; color:#6b7280; margin-left:4px; }';
-  h += '.table-wrap { flex:1; overflow-y:auto; padding:0 20px 20px; }';
-  h += 'table { width:100%; border-collapse:collapse; }';
-  h += 'thead th { position:sticky; top:0; background:#071221; color:#af9500; font-size:10px; text-transform:uppercase; letter-spacing:0.06em; padding:10px 10px; text-align:left; border-bottom:1px solid rgba(175,149,0,0.2); }';
+  h += '.filter-bar { display:flex; align-items:center; gap:10px; padding:10px 20px; background:#0a1a30; border-bottom:1px solid rgba(175,149,0,0.1); flex-shrink:0; }';
+  h += '.filter-bar label { font-size:11px; color:#af9500; white-space:nowrap; }';
+  h += '.filter-bar input[type=date] { background:#122c52; border:1px solid rgba(175,149,0,0.3); color:#e2d1c3; padding:5px 8px; border-radius:4px; font-size:12px; }';
+  h += '.btn-f { background:#af9500; color:#000; border:none; padding:6px 14px; border-radius:4px; font-size:12px; font-weight:700; cursor:pointer; }';
+  h += '.btn-c { background:transparent; color:#af9500; border:1px solid rgba(175,149,0,0.4); padding:6px 10px; border-radius:4px; font-size:12px; cursor:pointer; }';
+  h += '.stats { display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; padding:12px 20px; flex-shrink:0; }';
+  h += '.stat-box { background:#122c52; border:1px solid rgba(175,149,0,0.15); border-radius:8px; padding:12px 14px; }';
+  h += '.stat-label { font-size:10px; color:#af9500; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:4px; }';
+  h += '.stat-val { font-size:20px; font-weight:700; color:#fff; }';
+  h += '.stat-unit { font-size:11px; color:#6b7280; margin-left:3px; }';
+  h += '.tabs { display:flex; border-bottom:1px solid rgba(175,149,0,0.2); padding:0 20px; flex-shrink:0; }';
+  h += '.tab { padding:9px 16px; font-size:12px; cursor:pointer; color:rgba(226,209,195,0.4); border-bottom:2px solid transparent; margin-bottom:-1px; }';
+  h += '.tab.active { color:#af9500; border-bottom-color:#af9500; }';
+  h += '.tab-content { flex:1; overflow-y:auto; padding:0 20px 20px; }';
+  h += '.panel { display:none; }';
+  h += '.panel.active { display:block; }';
+  h += 'table { width:100%; border-collapse:collapse; margin-top:12px; }';
+  h += 'thead th { position:sticky; top:0; background:#071221; color:#af9500; font-size:10px; text-transform:uppercase; letter-spacing:0.06em; padding:10px; text-align:left; border-bottom:1px solid rgba(175,149,0,0.2); }';
   h += 'tbody tr { border-bottom:1px solid rgba(255,255,255,0.05); }';
   h += 'tbody tr:hover { background:rgba(175,149,0,0.05); }';
-  h += 'tbody td { padding:10px 10px; font-size:12px; color:#e2d1c3; }';
+  h += 'tbody td { padding:9px 10px; font-size:12px; color:#e2d1c3; }';
   h += '.badge { display:inline-block; background:#1a3a6e; color:#af9500; font-size:10px; padding:2px 7px; border-radius:20px; }';
   h += '.price { color:#7ee8a2; font-weight:600; }';
+  h += '.slip-thumb { width:40px; height:40px; object-fit:cover; border-radius:4px; cursor:pointer; border:1px solid rgba(175,149,0,0.2); }';
+  h += '.no-slip { color:#4b5563; font-size:11px; }';
   h += '.loading { color:#6b7280; text-align:center; padding:40px; }';
   h += '.empty { color:#6b7280; text-align:center; padding:40px; }';
   h += '</style></head><body>';
+
   h += '<div class="topbar"><h2>สรุปยอดขาย</h2></div>';
+
+  h += '<div class="filter-bar">';
+  h += '<label>ตั้งแต่</label><input type="date" id="f-from" />';
+  h += '<label>ถึง</label><input type="date" id="f-to" />';
+  h += '<button class="btn-f" onclick="applyFilter()">กรอง</button>';
+  h += '<button class="btn-c" onclick="clearFilter()">ล้าง</button>';
+  h += '</div>';
+
   h += '<div class="stats">';
-  h += '<div class="stat-box"><div class="stat-label">ขายแล้วทั้งหมด</div><div class="stat-val" id="s-count">...</div></div>';
+  h += '<div class="stat-box"><div class="stat-label">ขายแล้ว</div><div class="stat-val" id="s-count">...</div></div>';
   h += '<div class="stat-box"><div class="stat-label">ยอดขายรวม</div><div class="stat-val" id="s-revenue">...</div></div>';
   h += '<div class="stat-box"><div class="stat-label">น้ำหนักรวม</div><div class="stat-val" id="s-weight">...</div></div>';
   h += '</div>';
-  h += '<div class="table-wrap">';
-  h += '<div class="loading" id="loading">กำลังโหลด...</div>';
-  h += '<table id="tbl" style="display:none"><thead><tr>';
-  h += '<th>วันที่ขาย</th><th>ชื่อปลา</th><th>รหัส</th><th>น้ำหนัก</th><th>ราคา/กก.</th><th>ยอดขาย</th><th>ผู้ซื้อ</th>';
-  h += '</tr></thead><tbody id="tbody"></tbody></table>';
-  h += '<div class="empty" id="empty" style="display:none">ยังไม่มีการขายค่ะ</div>';
+
+  h += '<div class="tabs">';
+  h += '<div class="tab active" onclick="switchTab(\'daily\',this)">ยอดรายวัน</div>';
+  h += '<div class="tab" onclick="switchTab(\'detail\',this)">รายการขาย</div>';
   h += '</div>';
+
+  h += '<div class="tab-content">';
+  h += '<div class="panel active" id="panel-daily">';
+  h += '<div class="loading" id="loading">กำลังโหลด...</div>';
+  h += '<table id="tbl-daily" style="display:none"><thead><tr>';
+  h += '<th>วันที่</th><th>จำนวน</th><th>น้ำหนักรวม</th><th>ยอดขายรวม</th>';
+  h += '</tr></thead><tbody id="tbody-daily"></tbody></table>';
+  h += '<div class="empty" id="empty-daily" style="display:none">ไม่มีข้อมูลค่ะ</div>';
+  h += '</div>';
+  h += '<div class="panel" id="panel-detail">';
+  h += '<table id="tbl-detail" style="display:none"><thead><tr>';
+  h += '<th>วันที่ขาย</th><th>ชื่อปลา</th><th>รหัส</th><th>น้ำหนัก</th><th>ราคา/กก.</th><th>ยอดขาย</th><th>ผู้ซื้อ</th><th>สลิป</th>';
+  h += '</tr></thead><tbody id="tbody-detail"></tbody></table>';
+  h += '<div class="empty" id="empty-detail" style="display:none">ไม่มีข้อมูลค่ะ</div>';
+  h += '</div>';
+  h += '</div>';
+
   h += '<script>';
-  h += 'google.script.run.withSuccessHandler(function(data) {';
-  h += '  document.getElementById("loading").style.display = "none";';
-  h += '  if (!data.length) { document.getElementById("empty").style.display = "block"; return; }';
-  h += '  var totalRev = 0, totalWt = 0;';
-  h += '  var rows = "";';
-  h += '  data.forEach(function(r) {';
-  h += '    var sp = parseFloat(r.salePrice) || 0;';
-  h += '    var wt = parseFloat(r.weight) || 0;';
-  h += '    totalRev += sp; totalWt += wt;';
-  h += '    var pkg = r.priceKg ? Number(r.priceKg).toLocaleString() + " ฿" : "-";';
-  h += '    rows += "<tr>";';
-  h += '    rows += "<td>" + (r.saleDate || "-") + "</td>";';
-  h += '    rows += "<td>" + r.name + "</td>";';
-  h += '    rows += "<td><span class=\\"badge\\">" + r.code + "</span></td>";';
-  h += '    rows += "<td>" + wt + " กก.</td>";';
-  h += '    rows += "<td>" + pkg + "</td>";';
-  h += '    rows += "<td class=\\"price\\">" + sp.toLocaleString() + " ฿</td>";';
-  h += '    rows += "<td>" + (r.buyerName || "-") + "</td>";';
-  h += '    rows += "</tr>";';
+  h += 'var allData = [];';
+
+  h += 'function toDriveImg(url) {';
+  h += '  if (!url) return "";';
+  h += '  if (url.indexOf("lh3.googleusercontent.com") !== -1) return url;';
+  h += '  var m = url.match(/\\/d\\/([a-zA-Z0-9_-]+)/) || url.match(/[?&]id=([a-zA-Z0-9_-]+)/);';
+  h += '  return m ? "https://lh3.googleusercontent.com/d/" + m[1] : url;';
+  h += '}';
+
+  h += 'function parseDate(str) {';
+  h += '  if (!str) return null;';
+  h += '  var p = str.split("/");';
+  h += '  if (p.length !== 3) return null;';
+  h += '  return new Date(parseInt(p[2]) - 543, parseInt(p[1]) - 1, parseInt(p[0]));';
+  h += '}';
+
+  h += 'function switchTab(id, el) {';
+  h += '  document.querySelectorAll(".tab").forEach(function(t) { t.classList.remove("active"); });';
+  h += '  document.querySelectorAll(".panel").forEach(function(p) { p.classList.remove("active"); });';
+  h += '  el.classList.add("active");';
+  h += '  document.getElementById("panel-" + id).classList.add("active");';
+  h += '}';
+
+  h += 'function applyFilter() {';
+  h += '  var from = document.getElementById("f-from").value;';
+  h += '  var to   = document.getElementById("f-to").value;';
+  h += '  if (from && to && to < from) { alert("วันสิ้นสุดต้องไม่ก่อนวันเริ่มต้นค่ะ"); return; }';
+  h += '  render(getFiltered());';
+  h += '}';
+  h += 'function clearFilter() {';
+  h += '  document.getElementById("f-from").value = "";';
+  h += '  document.getElementById("f-to").value = "";';
+  h += '  render(allData);';
+  h += '}';
+
+  h += 'function parseDateInput(str) {';
+  h += '  if (!str) return null;';
+  h += '  var p = str.split("-");';
+  h += '  return new Date(parseInt(p[0]), parseInt(p[1])-1, parseInt(p[2]));';
+  h += '}';
+  h += 'function getFiltered() {';
+  h += '  var from = document.getElementById("f-from").value;';
+  h += '  var to   = document.getElementById("f-to").value;';
+  h += '  if (!from && !to) return allData;';
+  h += '  var dFrom = parseDateInput(from);';
+  h += '  var dTo   = parseDateInput(to);';
+  h += '  if (dTo) dTo.setHours(23,59,59);';
+  h += '  return allData.filter(function(r) {';
+  h += '    var d = parseDate(r.saleDate);';
+  h += '    if (!d) return false;';
+  h += '    if (dFrom && d < dFrom) return false;';
+  h += '    if (dTo   && d > dTo)   return false;';
+  h += '    return true;';
   h += '  });';
+  h += '}';
+
+  h += 'function render(data) {';
+  h += '  var totalRev = 0, totalWt = 0;';
+  h += '  data.forEach(function(r) { totalRev += parseFloat(r.salePrice)||0; totalWt += parseFloat(r.weight)||0; });';
   h += '  document.getElementById("s-count").innerHTML = data.length + "<span class=\\"stat-unit\\">ตัว</span>";';
   h += '  document.getElementById("s-revenue").innerHTML = totalRev.toLocaleString() + "<span class=\\"stat-unit\\">฿</span>";';
   h += '  document.getElementById("s-weight").innerHTML = totalWt.toFixed(1) + "<span class=\\"stat-unit\\">กก.</span>";';
-  h += '  document.getElementById("tbody").innerHTML = rows;';
-  h += '  document.getElementById("tbl").style.display = "table";';
+
+  h += '  var dayMap = {};';
+  h += '  data.forEach(function(r) {';
+  h += '    var k = r.saleDate || "-";';
+  h += '    if (!dayMap[k]) dayMap[k] = { count:0, rev:0, wt:0 };';
+  h += '    dayMap[k].count++;';
+  h += '    dayMap[k].rev += parseFloat(r.salePrice)||0;';
+  h += '    dayMap[k].wt  += parseFloat(r.weight)||0;';
+  h += '  });';
+  h += '  var keys = Object.keys(dayMap).sort(function(a,b) { var da=parseDate(a),db=parseDate(b); return (da&&db)?da-db:0; });';
+  h += '  if (keys.length) {';
+  h += '    var dr = "";';
+  h += '    keys.forEach(function(k) {';
+  h += '      var v = dayMap[k];';
+  h += '      dr += "<tr><td>" + k + "</td><td>" + v.count + " ตัว</td><td>" + v.wt.toFixed(1) + " กก.</td><td class=\\"price\\">" + v.rev.toLocaleString() + " ฿</td></tr>";';
+  h += '    });';
+  h += '    document.getElementById("tbody-daily").innerHTML = dr;';
+  h += '    document.getElementById("tbl-daily").style.display = "table";';
+  h += '    document.getElementById("empty-daily").style.display = "none";';
+  h += '  } else {';
+  h += '    document.getElementById("tbl-daily").style.display = "none";';
+  h += '    document.getElementById("empty-daily").style.display = "block";';
+  h += '  }';
+
+  h += '  if (data.length) {';
+  h += '    var rows = "";';
+  h += '    data.forEach(function(r) {';
+  h += '      var sp = parseFloat(r.salePrice)||0;';
+  h += '      var wt = parseFloat(r.weight)||0;';
+  h += '      var pkg = r.priceKg ? Number(r.priceKg).toLocaleString() + " ฿" : "-";';
+  h += '      rows += "<tr>";';
+  h += '      rows += "<td>" + (r.saleDate||"-") + "</td>";';
+  h += '      rows += "<td>" + r.name + "</td>";';
+  h += '      rows += "<td><span class=\\"badge\\">" + r.code + "</span></td>";';
+  h += '      rows += "<td>" + wt + " กก.</td>";';
+  h += '      rows += "<td>" + pkg + "</td>";';
+  h += '      rows += "<td class=\\"price\\">" + sp.toLocaleString() + " ฿</td>";';
+  h += '      rows += "<td>" + (r.buyerName||"-") + "</td>";';
+  h += '      rows += "<td>" + (r.proofUrl ? "<img class=\\"slip-thumb\\" src=\\"" + toDriveImg(r.proofUrl) + "\\" onclick=\\"window.open(this.src)\\" />" : "<span class=\\"no-slip\\">-</span>") + "</td>";';
+  h += '      rows += "</tr>";';
+  h += '    });';
+  h += '    document.getElementById("tbody-detail").innerHTML = rows;';
+  h += '    document.getElementById("tbl-detail").style.display = "table";';
+  h += '    document.getElementById("empty-detail").style.display = "none";';
+  h += '  } else {';
+  h += '    document.getElementById("tbl-detail").style.display = "none";';
+  h += '    document.getElementById("empty-detail").style.display = "block";';
+  h += '  }';
+  h += '}';
+
+  h += 'google.script.run.withSuccessHandler(function(data) {';
+  h += '  document.getElementById("loading").style.display = "none";';
+  h += '  allData = data;';
+  h += '  render(data);';
+  h += '}).withFailureHandler(function(err) {';
+  h += '  document.getElementById("loading").textContent = "โหลดไม่สำเร็จ: " + (err.message || err);';
   h += '}).getSalesData();';
   h += '<\/script></body></html>';
   return h;
@@ -140,10 +270,20 @@ function recordSale(data) {
     var headers = [
       "ชื่อปลา", "รหัสตัว", "น้ำหนัก (กก.)", "แหล่งจับ", "วันที่จับ",
       "ราคา/กก.", "ราคารวม", "รูป URL",
-      "ชื่อผู้ซื้อ", "เบอร์โทร", "ราคาที่ขายจริง", "วันที่ขาย"
+      "ชื่อผู้ซื้อ", "เบอร์โทร", "ราคาที่ขายจริง", "วันที่ขาย", "หลักฐานการจ่ายเงิน"
     ];
     soldSheet.getRange(1, 1, 1, headers.length).setValues([headers]);
     styleHeader(soldSheet, headers.length, "#1e3d6e");
+  }
+
+  var proofUrl = "";
+  if (data.proofBase64 && data.proofMimeType) {
+    var folders = DriveApp.getFoldersByName("APO Payment Proofs");
+    var folder = folders.hasNext() ? folders.next() : DriveApp.createFolder("APO Payment Proofs");
+    var blob = Utilities.newBlob(Utilities.base64Decode(data.proofBase64), data.proofMimeType, data.proofName || "proof.jpg");
+    var file = folder.createFile(blob);
+    file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+    proofUrl = "https://lh3.googleusercontent.com/d/" + file.getId();
   }
 
   var liveRow = liveSheet.getRange(data.rowIndex, 1, 1, 10).getValues()[0];
@@ -151,7 +291,7 @@ function recordSale(data) {
   soldSheet.appendRow([
     liveRow[0], liveRow[1], liveRow[2], liveRow[3], liveRow[4],
     liveRow[5], liveRow[6], liveRow[7],
-    data.buyerName, data.buyerPhone, data.salePrice, data.saleDate
+    data.buyerName, data.buyerPhone, data.salePrice, data.saleDate, proofUrl
   ]);
 
   liveSheet.getRange(data.rowIndex, 10).setValue("ขายแล้ว");
@@ -238,6 +378,8 @@ function getSaleSidebarHtml() {
   h += '<div class="field"><label>เบอร์โทร *</label><input type="text" id="buyer-phone" placeholder="08X-XXX-XXXX" /></div>';
   h += '<div class="field"><label>ราคาที่ขายจริง (บาท) *</label><input type="number" id="sale-price" placeholder="0" /></div>';
   h += '<div class="field"><label>วันที่ขาย *</label><input type="text" id="sale-date" value="' + todayStr + '" /></div>';
+  h += '<div class="field"><label>หลักฐานการจ่ายเงิน</label><input type="file" id="proof-file" accept="image/*" onchange="previewProof(this)" style="font-size:12px;" /></div>';
+  h += '<div id="proof-preview" style="display:none; margin-top:4px; margin-bottom:10px;"><img id="proof-img" style="max-width:100%; max-height:110px; border-radius:6px; object-fit:contain; background:#eee;" /></div>';
   h += '</div>';
   h += '<button class="btn-record" id="btn-record" onclick="doRecord()">บันทึกการขาย</button>';
   h += '</div></div></div>';
@@ -249,6 +391,8 @@ function getSaleSidebarHtml() {
   h += '  allFish = data;';
   h += '  if (data.length === 0) { document.getElementById("empty").style.display = "block"; return; }';
   h += '  renderList(data);';
+  h += '}).withFailureHandler(function(err) {';
+  h += '  document.getElementById("loading").textContent = "โหลดไม่สำเร็จ: " + (err.message || err);';
   h += '}).getLiveStock();';
 
   h += 'function renderList(fish) {';
@@ -287,6 +431,15 @@ function getSaleSidebarHtml() {
   h += '  if (selected.image) { img.src = toImgUrl(selected.image); img.style.display = "block"; } else { img.style.display = "none"; }';
   h += '}';
 
+  h += 'function previewProof(input) {';
+  h += '  if (!input.files || !input.files[0]) return;';
+  h += '  var reader = new FileReader();';
+  h += '  reader.onload = function(e) {';
+  h += '    document.getElementById("proof-img").src = e.target.result;';
+  h += '    document.getElementById("proof-preview").style.display = "block";';
+  h += '  };';
+  h += '  reader.readAsDataURL(input.files[0]);';
+  h += '}';
   h += 'function doRecord() {';
   h += '  var name  = document.getElementById("buyer-name").value.trim();';
   h += '  var phone = document.getElementById("buyer-phone").value.trim();';
@@ -295,21 +448,35 @@ function getSaleSidebarHtml() {
   h += '  if (!selected || !name || !phone || !price || !date) { alert("กรุณากรอกข้อมูลให้ครบค่ะ"); return; }';
   h += '  var btn = document.getElementById("btn-record");';
   h += '  btn.disabled = true; btn.textContent = "กำลังบันทึก...";';
-  h += '  google.script.run.withSuccessHandler(function(result) {';
-  h += '    var msg = document.getElementById("success-msg");';
-  h += '    msg.textContent = result.message; msg.style.display = "block";';
-  h += '    document.getElementById("buyer-name").value = "";';
-  h += '    document.getElementById("buyer-phone").value = "";';
-  h += '    document.getElementById("sale-price").value = "";';
-  h += '    btn.disabled = false; btn.textContent = "บันทึกการขาย";';
-  h += '    selected = null;';
-  h += '    document.getElementById("placeholder").style.display = "block";';
-  h += '    document.getElementById("form-area").style.display = "none";';
-  h += '    google.script.run.withSuccessHandler(function(data) {';
-  h += '      allFish = data;';
-  h += '      renderList(data);';
-  h += '    }).getLiveStock();';
-  h += '  }).recordSale({ rowIndex: selected.rowIndex, buyerName: name, buyerPhone: phone, salePrice: price, saleDate: date });';
+  h += '  function submit(payload) {';
+  h += '    google.script.run.withSuccessHandler(function(result) {';
+  h += '      var msg = document.getElementById("success-msg");';
+  h += '      msg.textContent = result.message; msg.style.display = "block";';
+  h += '      document.getElementById("buyer-name").value = "";';
+  h += '      document.getElementById("buyer-phone").value = "";';
+  h += '      document.getElementById("sale-price").value = "";';
+  h += '      document.getElementById("proof-file").value = "";';
+  h += '      document.getElementById("proof-preview").style.display = "none";';
+  h += '      btn.disabled = false; btn.textContent = "บันทึกการขาย";';
+  h += '      selected = null;';
+  h += '      document.getElementById("placeholder").style.display = "block";';
+  h += '      document.getElementById("form-area").style.display = "none";';
+  h += '      google.script.run.withSuccessHandler(function(data) { allFish = data; renderList(data); }).getLiveStock();';
+  h += '    }).withFailureHandler(function(err) {';
+  h += '      btn.disabled = false; btn.textContent = "บันทึกการขาย";';
+  h += '      alert("เกิดข้อผิดพลาด: " + (err.message || err));';
+  h += '    }).recordSale(payload);';
+  h += '  }';
+  h += '  var proofFile = document.getElementById("proof-file").files[0];';
+  h += '  if (proofFile) {';
+  h += '    var reader = new FileReader();';
+  h += '    reader.onload = function(e) {';
+  h += '      submit({ rowIndex: selected.rowIndex, buyerName: name, buyerPhone: phone, salePrice: price, saleDate: date, proofBase64: e.target.result.split(",")[1], proofMimeType: proofFile.type, proofName: proofFile.name });';
+  h += '    };';
+  h += '    reader.readAsDataURL(proofFile);';
+  h += '  } else {';
+  h += '    submit({ rowIndex: selected.rowIndex, buyerName: name, buyerPhone: phone, salePrice: price, saleDate: date });';
+  h += '  }';
   h += '}';
   h += '<\/script></body></html>';
 
