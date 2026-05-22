@@ -97,9 +97,8 @@ apo-stock/
 
 ## 5. Deployment
 
-- โฮสต์ที่ **GitHub Pages** (branch: `main`)
-- เมื่อ push ไปที่ `main` → GitHub Actions จะ validate HTML และ deploy อัตโนมัติ
-- URL หน้าเว็บ: `https://fxrkssr.github.io/apo-stock/`
+- โฮสต์ที่ **Vercel**
+- URL หน้าเว็บ: `https://apo-stock-di7x.vercel.app/`
 
 ---
 
@@ -110,7 +109,7 @@ apo-stock/
 - [ ] **Apps Script API** — https://script.google.com/macros/s/AKfycbwWBH-Bcvh8W6LNLbLMIkQxizQsAG6yNYnTUeoHV6aRIPT8VFa_N6AdQuDQCqtumsGxTA/exec
 - [ ] **Cloudflare R2 access** — สำหรับอัปเดตโลโก้
 - [ ] **GitHub repo access** — https://github.com/fxrkssr/apo-stock
-- [ ] **GitHub Pages enabled** — Settings → Pages → Source: GitHub Actions
+- [ ] **Vercel project access** — https://apo-stock-di7x.vercel.app/
 
 ---
 
