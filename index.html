@@ -94,10 +94,15 @@
             document.getElementById('panel-fish').innerHTML = render(items.filter(i => i.category === "ปลา"));
             document.getElementById('panel-shell').innerHTML = render(items.filter(i => i.category === "หอย/ทะเล"));
         }
+        function toImgUrl(url) {
+            if (!url || url.indexOf('drive.google.com') === -1) return url;
+            var m = url.match(/[?&]id=([a-zA-Z0-9_-]+)/) || url.match(/\/d\/([a-zA-Z0-9_-]+)/);
+            return m ? 'https://lh3.googleusercontent.com/d/' + m[1] : url;
+        }
         function render(data) {
             return data.map(item => `
                 <article class="product-card">
-                    <div class="product-image" style="background-image: url('${item.image}')"></div>
+                    <div class="product-image" style="background-image: url('${toImgUrl(item.image)}')"></div>
                     <div class="product-info">
                         <small style="color:var(--gold)">${item.code}</small>
                         <h2>${item.name}</h2>
