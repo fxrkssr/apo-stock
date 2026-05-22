@@ -1,0 +1,222 @@
+// ============================================================
+//  APO — Admin Dashboard (v2)
+// ============================================================
+
+function openDashboard() {
+  var html = HtmlService.createHtmlOutput(getDashboardHtml())
+    .setWidth(900)
+    .setHeight(640);
+  SpreadsheetApp.getUi().showModalDialog(html, "āPO — Admin Dashboard");
+}
+
+function uploadNewImage(base64Data, mimeType, fileName) {
+  var decoded = Utilities.base64Decode(base64Data);
+  var blob    = Utilities.newBlob(decoded, mimeType, fileName);
+  var file    = DriveApp.createFile(blob);
+  file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+  return "https://lh3.googleusercontent.com/d/" + file.getId();
+}
+
+function publishFish(data) {
+  var ss        = SpreadsheetApp.getActiveSpreadsheet();
+  var rawSheet  = ss.getSheetByName("Stock จากชาวประมง");
+  var liveSheet = ss.getSheetByName("Stock ที่จะขายให้ลูกค้า");
+  if (!rawSheet || !liveSheet) return { success: false, message: "ไม่พบ Sheet ค่ะ" };
+
+  var today   = Utilities.formatDate(new Date(), "Asia/Bangkok", "d/MM/yyyy");
+  var lastRow = liveSheet.getLastRow() + 1;
+
+  liveSheet.appendRow([
+    data.name, data.code, parseFloat(data.weight) || 0,
+    data.source, data.date, parseFloat(data.priceKg) || "", "", data.image,
+    today, "พร้อมขาย", data.category
+  ]);
+  liveSheet.getRange(lastRow, 7).setFormula(
+    "=IF(F"+lastRow+"*C"+lastRow+'=0,"",F'+lastRow+"*C"+lastRow+")"
+  );
+  rawSheet.getRange(data.rowIndex, 10).setValue("Publish แล้ว");
+  return { success: true, message: "ขึ้นขายเรียบร้อยแล้วค่ะ" };
+}
+
+function getDashboardHtml() {
+  var css = ''
+  + '* { margin:0; padding:0; box-sizing:border-box; }'
+  + 'body { font-family:"Helvetica Neue",sans-serif; font-size:13px; background:#0d1f3c; color:#e2d1c3; height:100vh; overflow:hidden; }'
+  + '.layout { display:flex; height:100vh; }'
+  + '.list-panel { width:320px; flex-shrink:0; background:#0a1829; border-right:1px solid rgba(175,149,0,0.2); display:flex; flex-direction:column; }'
+  + '.list-header { padding:14px 16px; background:#071221; border-bottom:1px solid rgba(175,149,0,0.2); }'
+  + '.list-header h2 { font-size:13px; color:#af9500; letter-spacing:0.08em; text-transform:uppercase; }'
+  + '.list-header p { font-size:11px; color:#6b7280; margin-top:2px; }'
+  + '.fish-list { flex:1; overflow-y:auto; padding:10px; }'
+  + '.fish-card { background:#122c52; border:1px solid rgba(175,149,0,0.1); border-radius:8px; padding:10px; margin-bottom:8px; cursor:pointer; display:flex; gap:10px; align-items:center; }'
+  + '.fish-card:hover { border-color:rgba(175,149,0,0.4); }'
+  + '.fish-card.active { border-color:#af9500; background:#1a3a6e; }'
+  + '.fish-thumb { width:52px; height:52px; border-radius:6px; object-fit:cover; background:#0d1f3c; flex-shrink:0; }'
+  + '.fish-thumb-ph { width:52px; height:52px; border-radius:6px; background:#1a2d4a; display:flex; align-items:center; justify-content:center; font-size:22px; flex-shrink:0; }'
+  + '.fish-meta { flex:1; min-width:0; }'
+  + '.fish-name { font-weight:600; font-size:13px; color:#fff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }'
+  + '.fish-code { font-size:10px; color:#af9500; margin-top:1px; }'
+  + '.fish-sub { font-size:11px; color:#6b7280; margin-top:3px; }'
+  + '.empty-list { text-align:center; padding:40px 20px; color:#6b7280; font-size:12px; }'
+  + '.edit-panel { flex:1; display:flex; flex-direction:column; overflow:hidden; }'
+  + '.placeholder { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; color:#3a4f6b; }'
+  + '.placeholder span { font-size:40px; margin-bottom:12px; }'
+  + '.edit-form { flex:1; display:flex; flex-direction:column; overflow:hidden; }'
+  + '.edit-header { padding:14px 20px; background:#071221; border-bottom:1px solid rgba(175,149,0,0.2); display:flex; align-items:center; justify-content:space-between; }'
+  + '.edit-header h2 { font-size:13px; color:#af9500; letter-spacing:0.06em; text-transform:uppercase; }'
+  + '.edit-body { flex:1; overflow-y:auto; padding:16px 20px; display:flex; gap:20px; }'
+  + '.img-section { width:200px; flex-shrink:0; }'
+  + '.img-preview { width:200px; height:160px; border-radius:8px; object-fit:cover; background:#0a1829; border:1px solid rgba(175,149,0,0.2); }'
+  + '.img-ph { width:200px; height:160px; border-radius:8px; background:#0a1829; border:1px dashed rgba(175,149,0,0.3); display:flex; align-items:center; justify-content:center; font-size:36px; }'
+  + '.btn-upload { width:100%; margin-top:8px; padding:8px; background:transparent; border:1px solid rgba(175,149,0,0.4); color:#af9500; border-radius:6px; font-size:12px; cursor:pointer; }'
+  + '.img-note { font-size:10px; color:#6b7280; margin-top:6px; text-align:center; }'
+  + '.fields { flex:1; display:grid; grid-template-columns:1fr 1fr; gap:12px; align-content:start; }'
+  + '.field { display:flex; flex-direction:column; gap:4px; }'
+  + '.field.full { grid-column:1/-1; }'
+  + '.field label { font-size:10px; color:#af9500; text-transform:uppercase; letter-spacing:0.06em; }'
+  + '.field input, .field select { background:#0a1829; border:1px solid rgba(175,149,0,0.2); color:#e2d1c3; padding:8px 10px; border-radius:6px; font-size:13px; }'
+  + '.field input:focus, .field select:focus { outline:none; border-color:#af9500; }'
+  + '.field select option { background:#0a1829; }'
+  + '.edit-footer { padding:12px 20px; border-top:1px solid rgba(175,149,0,0.2); background:#071221; display:flex; align-items:center; gap:12px; }'
+  + '.btn-publish { flex:1; padding:12px; background:#af9500; color:#000; border:none; border-radius:8px; font-size:13px; font-weight:700; text-transform:uppercase; cursor:pointer; }'
+  + '.btn-publish:disabled { background:#3a4f6b; color:#6b7280; cursor:not-allowed; }'
+  + '.ok { font-size:12px; color:#7ee8a2; } .err { font-size:12px; color:#f78166; }';
+
+  var body = ''
+  + '<div class="layout">'
+  + '<div class="list-panel">'
+  + '  <div class="list-header"><h2>🐟 Stock จากชาวประมง</h2><p id="cnt">กำลังโหลด...</p></div>'
+  + '  <div class="fish-list" id="lst"><div class="empty-list">กำลังโหลด...</div></div>'
+  + '</div>'
+  + '<div class="edit-panel">'
+  + '  <div class="placeholder" id="ph"><span>🐟</span><p>เลือกปลาจากรายการด้านซ้าย</p></div>'
+  + '  <div class="edit-form" id="ef" style="display:none">'
+  + '    <div class="edit-header"><h2>แก้ไขข้อมูลก่อนขึ้นขาย</h2><span id="ec" style="font-size:11px;color:#6b7280"></span></div>'
+  + '    <div class="edit-body">'
+  + '      <div class="img-section">'
+  + '        <div class="img-ph" id="iph">🐟</div>'
+  + '        <img id="ipv" class="img-preview" style="display:none" src="" />'
+  + '        <button class="btn-upload" onclick="document.getElementById(\'fi\').click()">อัปโหลดรูปใหม่</button>'
+  + '        <input type="file" id="fi" accept="image/*" style="display:none" onchange="onFile(this)" />'
+  + '        <p class="img-note" id="inote">ใช้รูปเดิมจากชาวประมง</p>'
+  + '      </div>'
+  + '      <div class="fields">'
+  + '        <div class="field full"><label>ชื่อปลา</label><input type="text" id="fn" /></div>'
+  + '        <div class="field"><label>รหัสตัว</label><input type="text" id="fc" /></div>'
+  + '        <div class="field"><label>ประเภท</label><select id="fcat"><option value="ปลา">ปลา</option><option value="หอย/ทะเล">หอย/ทะเล</option></select></div>'
+  + '        <div class="field"><label>น้ำหนัก (กก.)</label><input type="number" id="fw" step="0.1" /></div>'
+  + '        <div class="field"><label>ราคา/กก. (บาท)</label><input type="number" id="fprice" step="1" placeholder="กรอกราคา" /></div>'
+  + '        <div class="field"><label>แหล่งจับ</label><input type="text" id="fs" /></div>'
+  + '        <div class="field"><label>วันที่จับ</label><input type="text" id="fd" /></div>'
+  + '      </div>'
+  + '    </div>'
+  + '    <div class="edit-footer"><button class="btn-publish" id="bp" onclick="doPublish()">ขึ้นขาย</button><span id="fm"></span></div>'
+  + '  </div>'
+  + '</div>'
+  + '</div>';
+
+  var js = ''
+  + 'var fish=[], sel=null, b64=null, mime=null, fname=null;'
+  + 'google.script.run'
+  + '.withSuccessHandler(function(d){'
+  + '  fish=d||[];'
+  + '  document.getElementById("cnt").textContent = fish.length ? "รายการใหม่ "+fish.length+" ตัว" : "ไม่มีรายการใหม่";'
+  + '  if(!fish.length){document.getElementById("lst").innerHTML="<div class=\'empty-list\'>ไม่มีปลาใหม่จากชาวประมงค่ะ</div>";return;}'
+  + '  document.getElementById("lst").innerHTML=fish.map(function(f,i){'
+  + '    var img=f.image?"<img class=\'fish-thumb\' src=\'"+f.image+"\' onerror=\'this.style.display=\\\"none\\\"\' />":"<div class=\'fish-thumb-ph\'>🐟</div>";'
+  + '    return "<div class=\'fish-card\' id=\'c"+i+"\' onclick=\'pick("+i+")\'>"'
+  + '      +img+"<div class=\'fish-meta\'>"'
+  + '      +"<div class=\'fish-name\'>"+f.name+"</div>"'
+  + '      +"<div class=\'fish-code\'>"+f.code+"</div>"'
+  + '      +"<div class=\'fish-sub\'>"+f.weight+" กก. · "+(f.date||"—")+"</div>"'
+  + '      +"</div></div>";'
+  + '  }).join("");'
+  + '})'
+  + '.withFailureHandler(function(e){'
+  + '  document.getElementById("cnt").textContent="โหลดไม่ได้";'
+  + '  document.getElementById("lst").innerHTML="<div class=\'empty-list\' style=\'color:#f78166\'>"+e.message+"</div>";'
+  + '})'
+  + '.getRawStock();'
+
+  + 'function pick(i){'
+  + '  if(sel!==null){var p=document.getElementById("c"+sel);if(p)p.classList.remove("active");}'
+  + '  sel=i; b64=null; mime=null; fname=null;'
+  + '  document.getElementById("c"+i).classList.add("active");'
+  + '  var f=fish[i];'
+  + '  document.getElementById("ph").style.display="none";'
+  + '  document.getElementById("ef").style.display="flex";'
+  + '  document.getElementById("ec").textContent=f.code;'
+  + '  document.getElementById("fn").value=f.name||"";'
+  + '  document.getElementById("fc").value=f.code||"";'
+  + '  document.getElementById("fw").value=f.weight||"";'
+  + '  document.getElementById("fs").value=f.source||"";'
+  + '  document.getElementById("fd").value=f.date||"";'
+  + '  document.getElementById("fcat").value=f.category||"ปลา";'
+  + '  document.getElementById("fprice").value="";'
+  + '  var pv=document.getElementById("ipv"); var ph=document.getElementById("iph");'
+  + '  if(f.image){pv.src=f.image;pv.style.display="block";ph.style.display="none";}else{pv.style.display="none";ph.style.display="flex";}'
+  + '  document.getElementById("inote").textContent="ใช้รูปเดิมจากชาวประมง";'
+  + '  document.getElementById("fm").textContent="";'
+  + '  document.getElementById("bp").disabled=false;'
+  + '  document.getElementById("bp").textContent="ขึ้นขาย";'
+  + '}'
+
+  + 'function onFile(inp){'
+  + '  var file=inp.files[0]; if(!file)return;'
+  + '  var r=new FileReader();'
+  + '  r.onload=function(e){'
+  + '    var img=new Image();'
+  + '    img.onload=function(){'
+  + '      var c=document.createElement("canvas");'
+  + '      var s=Math.min(1,1200/Math.max(img.width,img.height));'
+  + '      c.width=img.width*s; c.height=img.height*s;'
+  + '      c.getContext("2d").drawImage(img,0,0,c.width,c.height);'
+  + '      var url=c.toDataURL("image/jpeg",0.82);'
+  + '      b64=url.split(",")[1]; mime="image/jpeg"; fname=file.name;'
+  + '      var pv=document.getElementById("ipv");'
+  + '      pv.src=url; pv.style.display="block";'
+  + '      document.getElementById("iph").style.display="none";'
+  + '      document.getElementById("inote").textContent="✅ ใช้รูปใหม่ที่เลือก";'
+  + '    }; img.src=e.target.result;'
+  + '  }; r.readAsDataURL(file);'
+  + '}'
+
+  + 'function driveUrl(url){'
+  + '  if(!url||url.indexOf("drive.google.com")===-1)return url||"";'
+  + '  var m=url.match(/\\/d\\/([a-zA-Z0-9_-]+)/);'
+  + '  if(!m)m=url.match(/[?&]id=([a-zA-Z0-9_-]+)/);'
+  + '  return m?"https://lh3.googleusercontent.com/d/"+m[1]:url;'
+  + '}'
+
+  + 'function doPublish(){'
+  + '  if(sel===null)return;'
+  + '  var f=fish[sel];'
+  + '  var btn=document.getElementById("bp"); var msg=document.getElementById("fm");'
+  + '  btn.disabled=true; btn.textContent="กำลังบันทึก..."; msg.textContent="";'
+  + '  function save(imgUrl){'
+  + '    google.script.run'
+  + '    .withSuccessHandler(function(r){'
+  + '      if(r.success){'
+  + '        msg.className="ok"; msg.textContent=r.message;'
+  + '        fish.splice(sel,1);'
+  + '        document.getElementById("c"+sel).remove();'
+  + '        document.querySelectorAll(".fish-card").forEach(function(c,i){c.id="c"+i;c.setAttribute("onclick","pick("+i+")");});'
+  + '        sel=null;'
+  + '        document.getElementById("ef").style.display="none";'
+  + '        document.getElementById("ph").style.display="flex";'
+  + '        document.getElementById("cnt").textContent="รายการใหม่ "+fish.length+" ตัว";'
+  + '      }else{msg.className="err";msg.textContent=r.message;btn.disabled=false;btn.textContent="ขึ้นขาย";}'
+  + '    })'
+  + '    .withFailureHandler(function(e){msg.className="err";msg.textContent=e.message;btn.disabled=false;btn.textContent="ขึ้นขาย";})'
+  + '    .publishFish({rowIndex:f.rowIndex,name:document.getElementById("fn").value,code:document.getElementById("fc").value,'
+  + '      weight:document.getElementById("fw").value,priceKg:document.getElementById("fprice").value,'
+  + '      source:document.getElementById("fs").value,'
+  + '      date:document.getElementById("fd").value,category:document.getElementById("fcat").value,image:imgUrl});'
+  + '  }'
+  + '  if(b64){google.script.run.withSuccessHandler(save).withFailureHandler(function(e){msg.className="err";msg.textContent=e.message;btn.disabled=false;btn.textContent="ขึ้นขาย";}).uploadNewImage(b64,mime,fname);}'
+  + '  else{save(driveUrl(fish[sel].image));}'
+  + '}';
+
+  return '<!DOCTYPE html><html><head><meta charset="UTF-8"><style>' + css + '</style></head>'
+    + '<body>' + body + '<script>' + js + '<\/script></body></html>';
+}
