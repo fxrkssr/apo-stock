@@ -34,7 +34,8 @@ function publishFish(data) {
   liveSheet.getRange(lastRow, 7).setFormula(
     "=IF(F"+lastRow+"*C"+lastRow+'=0,"",F'+lastRow+"*C"+lastRow+")"
   );
-  rawSheet.getRange(data.rowIndex, 10).setValue("Publish แล้ว");
+  var statusColIdx = ((data.statusCol != null ? data.statusCol : 9) + 1);
+  rawSheet.getRange(data.rowIndex, statusColIdx).setValue("Publish แล้ว");
   return { success: true, message: "ขึ้นขายเรียบร้อยแล้วค่ะ" };
 }
 
@@ -211,7 +212,7 @@ function getDashboardHtml() {
   + '      }else{msg.className="err";msg.textContent=r.message;btn.disabled=false;btn.textContent="ขึ้นขาย";}'
   + '    })'
   + '    .withFailureHandler(function(e){msg.className="err";msg.textContent=e.message;btn.disabled=false;btn.textContent="ขึ้นขาย";})'
-  + '    .publishFish({rowIndex:f.rowIndex,name:document.getElementById("fn").value,code:document.getElementById("fc").value,'
+  + '    .publishFish({rowIndex:f.rowIndex,statusCol:f.statusCol,name:document.getElementById("fn").value,code:document.getElementById("fc").value,'
   + '      weight:document.getElementById("fw").value,priceKg:document.getElementById("fprice").value,'
   + '      source:document.getElementById("fs").value,'
   + '      date:document.getElementById("fd").value,category:document.getElementById("fcat").value,image:imgUrl});'
