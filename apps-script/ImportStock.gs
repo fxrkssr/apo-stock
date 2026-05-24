@@ -213,32 +213,57 @@ function getRawStock() {
   var data = sheet.getDataRange().getValues();
   if (data.length < 2) return [];
 
+  // อ่าน column index จาก header row — รองรับกรณี Form มี column ซ้ำ
+  var headers   = data[0].map(function(h) { return (h || "").toString().trim(); });
+  var nameCol   = headers.lastIndexOf("ชื่อปลา");     // ใช้ last = dropdown ใหม่
+  var codeCol   = headers.indexOf("รหัสตัว");
+  var weightCol = headers.indexOf("น้ำหนัก (กก.)");
+  var sourceCol = headers.indexOf("แหล่งจับ");
+  var noteCol   = headers.indexOf("หมายเหตุ");
+  var dayCol    = headers.indexOf("วันที่จับ – วัน");
+  var monthCol  = headers.indexOf("วันที่จับ – เดือน");
+  var imageCol  = headers.indexOf("แนบรูป");
+  var statusCol = headers.lastIndexOf("สถานะ");
+
+  // fallback ถ้าหา header ไม่เจอ
+  if (nameCol   < 0) nameCol   = 1;
+  if (codeCol   < 0) codeCol   = 2;
+  if (weightCol < 0) weightCol = 3;
+  if (sourceCol < 0) sourceCol = 4;
+  if (noteCol   < 0) noteCol   = 5;
+  if (dayCol    < 0) dayCol    = 6;
+  if (monthCol  < 0) monthCol  = 7;
+  if (imageCol  < 0) imageCol  = 8;
+  if (statusCol < 0) statusCol = 9;
+
   var result = [];
   data.slice(1).forEach(function(row, i) {
-    if (!row[1]) return;
-    var status = row[9] || "ใหม่";
+    if (!row[nameCol]) return;
+    var status = (row[statusCol] || "").toString() || "ใหม่";
     if (status === "Publish แล้ว") return;
 
-    var day = row[6] || "";
-    var month = row[7] || "";
-    var date = day && month ? day + " " + month : "";
+    var day   = row[dayCol]   || "";
+    var month = row[monthCol] || "";
+    var date  = day && month ? day + " " + month : "";
 
-    var fishImage = makeDriveImageUrl(row[8]) ||
-                    (getPriceLookup().images[getThaiName(row[1])] || "");
+    var fishName  = row[nameCol].toString().trim();
+    var fishImage = makeDriveImageUrl(row[imageCol]) ||
+                    (getPriceLookup().images[getThaiName(fishName)] || "");
 
     result.push({
-      rowIndex: i + 2,
-      name:     row[1],
-      code:     row[2],
-      weight:   row[3],
-      source:   row[4],
-      note:     row[5],
-      date:     date,
-      image:    fishImage,
-      status:   status,
-      category: getCategory(row[1]),
-      priceKg:  getFishPriceDynamic(row[1]),
-      unit:     getFishUnitDynamic(row[1])
+      rowIndex:  i + 2,
+      name:      fishName,
+      code:      row[codeCol],
+      weight:    row[weightCol],
+      source:    row[sourceCol],
+      note:      row[noteCol],
+      date:      date,
+      image:     fishImage,
+      status:    status,
+      category:  getCategory(fishName),
+      priceKg:   getFishPriceDynamic(fishName),
+      unit:      getFishUnitDynamic(fishName),
+      statusCol: statusCol  // ส่งไปให้ importSelectedFish ใช้ mark status
     });
   });
 
@@ -280,7 +305,8 @@ function importSelectedFish(selectedRows) {
       "=IF(F" + lastRow + "*C" + lastRow + "=0,\"\",F" + lastRow + "*C" + lastRow + ")"
     );
 
-    rawSheet.getRange(row.rowIndex, 10).setValue("Publish แล้ว");
+    var statusCol = (row.statusCol || 9) + 1; // convert 0-based → 1-based
+    rawSheet.getRange(row.rowIndex, statusCol).setValue("Publish แล้ว");
     imported++;
   });
 

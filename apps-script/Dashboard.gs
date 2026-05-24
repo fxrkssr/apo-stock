@@ -258,9 +258,10 @@ function setupFishTypeQuestion() {
     choices = Object.keys(FISH_PRICES);
   }
 
-  // ลบ question ชื่อปลาเดิม (ถ้ามี)
+  // ลบ question ชื่อปลาทุกอัน (ทั้ง text และ dropdown เดิม) ป้องกัน column ซ้ำ
   form.getItems().forEach(function(item) {
-    if (item.getTitle() === "ชื่อปลา") form.deleteItem(item);
+    var t = item.getTitle().trim();
+    if (t === "ชื่อปลา") form.deleteItem(item);
   });
 
   // เพิ่ม dropdown ใหม่
