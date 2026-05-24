@@ -108,7 +108,7 @@ Apo/
 ### WebApp.gs
 | ฟังก์ชัน | ทำอะไร |
 |---------|--------|
-| `doGet()` | ดึงข้อมูลจาก Sheet 2 ส่งเป็น JSON ให้เว็บลูกค้า รวม `unit` field |
+| `doGet(e)` | ดึงข้อมูลจาก Sheet 2 ส่งเป็น JSON ให้เว็บลูกค้า รวม `unit` field — รองรับ JSONP (`?callback=fn`) เพื่อแก้ CORS |
 
 ### Dashboard.gs
 | ฟังก์ชัน | ทำอะไร |
@@ -152,13 +152,19 @@ Apo/
 
 **duplicate columns ใน Sheet 1:** เกิดจากการเพิ่ม form questions หลายครั้ง ลบไม่ได้ (Google Forms restriction) → ซ่อนไว้ `getRawStock()` รับมือด้วย `allCols()`+`pickVal()`
 
+**หน่วย (kg/ตัว) บนเว็บลูกค้า:** ดึงจาก col L ของ Sheet 2 — ปลาที่ Publish ก่อนเพิ่ม col L ต้องพิมพ์ `kg` หรือ `ตัว` ลง col L ด้วยมือ ปลาที่ Publish หลังจากนี้จะ auto-fill อัตโนมัติ
+
 ---
 
 ## การ Deploy
 
 **Apps Script → ใช้งาน:**
-1. Copy `ImportStock.gs` และ `Dashboard.gs` ขึ้น Apps Script Editor
-2. Save → Deploy → Manage deployments → New version → Deploy
+1. Copy ไฟล์ทั้ง 4 ขึ้น Apps Script Editor: `Dashboard.gs`, `ImportStock.gs`, `WebApp.gs`, `RecordSale.gs`
+2. Save → **Deploy → New deployment** → Type: **Web app** → Execute as: Me → Who has access: **Anyone** → Deploy
+3. Copy URL ที่ได้ → อัพเดทใน `index.html` บรรทัด `const API = "..."`
+
+> ⚠️ ต้อง deploy เป็น **Web app** เท่านั้น — ถ้าเลือก Library จะใช้เป็น API ไม่ได้
+> ⚠️ index.html ใช้ JSONP (`?callback=fn`) แทน fetch เพื่อแก้ปัญหา CORS
 
 **Setup ครั้งแรก (รันตามลำดับ):**
 1. `setupPriceSheet` — สร้าง Sheet ราคาปลา (รันครั้งเดียว)
