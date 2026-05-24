@@ -34,9 +34,16 @@ function publishFish(data) {
   liveSheet.getRange(lastRow, 7).setFormula(
     "=IF(F"+lastRow+"*C"+lastRow+'=0,"",F'+lastRow+"*C"+lastRow+")"
   );
-  var hdr = rawSheet.getRange(1, 1, 1, rawSheet.getLastColumn()).getValues()[0];
-  var statusColIdx = hdr.lastIndexOf("สถานะ") + 1;
-  if (statusColIdx <= 0) statusColIdx = data.statusCol != null ? data.statusCol + 1 : 10;
+  var lastCol = rawSheet.getLastColumn();
+  var hdr = rawSheet.getRange(1, 1, 1, lastCol).getValues()[0];
+  var statusColIdx = -1;
+  for (var c = hdr.length - 1; c >= 0; c--) {
+    if (hdr[c] === "สถานะ") { statusColIdx = c + 1; break; }
+  }
+  if (statusColIdx < 0) {
+    statusColIdx = lastCol + 1;
+    rawSheet.getRange(1, statusColIdx).setValue("สถานะ");
+  }
   rawSheet.getRange(data.rowIndex, statusColIdx).setValue("Publish แล้ว");
   return { success: true, message: "ขึ้นขายเรียบร้อยแล้วค่ะ" };
 }
