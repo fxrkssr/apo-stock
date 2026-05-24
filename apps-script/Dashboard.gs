@@ -258,18 +258,23 @@ function setupFishTypeQuestion() {
     choices = Object.keys(FISH_PRICES);
   }
 
-  // collect ก่อน แล้วค่อย delete — ห้าม delete ขณะ loop หรือจะ skip items
-  var toDelete = form.getItems().filter(function(item) {
-    return item.getTitle().trim() === "ชื่อปลา";
-  });
-  toDelete.forEach(function(item) {
-    form.deleteItem(item);
-  });
+  // หา list items ที่มีอยู่แล้วทั้งหมด
+  var existing = form.getItems(FormApp.ItemType.LIST);
 
-  // เพิ่ม dropdown ใหม่
-  var listItem = form.addListItem();
-  listItem.setTitle("ชื่อปลา").setRequired(true).setChoiceValues(choices);
-  form.moveItem(listItem.getIndex(), 0);
+  if (existing.length > 0) {
+    // อัปเดต choices ในข้อแรก — Sheets จะ reuse column เดิม ไม่สร้างใหม่
+    existing[0].asListItem().setTitle("ชื่อปลา").setRequired(true).setChoiceValues(choices);
+    form.moveItem(existing[0].getIndex(), 0);
+    // ลบ duplicates ที่เหลือ (วน backwards เพื่อ index ไม่เลื่อน)
+    for (var i = existing.length - 1; i >= 1; i--) {
+      form.deleteItem(existing[i]);
+    }
+  } else {
+    // ยังไม่มีเลย — สร้างใหม่ครั้งเดียว
+    var listItem = form.addListItem();
+    listItem.setTitle("ชื่อปลา").setRequired(true).setChoiceValues(choices);
+    form.moveItem(listItem.getIndex(), 0);
+  }
 
   SpreadsheetApp.getUi().alert("✅ อัปเดต Google Form เรียบร้อยแล้วค่ะ\nเพิ่ม dropdown ชื่อปลา " + choices.length + " ชนิด");
 }
