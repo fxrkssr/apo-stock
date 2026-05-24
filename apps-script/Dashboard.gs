@@ -268,6 +268,31 @@ function resetStockSheet() {
   SpreadsheetApp.getUi().alert("✅ รีเซ็ต Sheet เรียบร้อยแล้วค่ะ\nตอนนี้ column ตรงกับ Form พอดี");
 }
 
+// ลบ form questions ที่ชื่อซ้ำกัน — เก็บอันแรก ลบอันที่สองเป็นต้นไป
+function removeDuplicateQuestions() {
+  var form = FormApp.openById("1E7lftgnlrkU4PpOAkJz5Yjo_aoMvKGlt6CFalQQawiA");
+  var seen = {};
+  var toDelete = [];
+
+  form.getItems().forEach(function(item) {
+    var title = item.getTitle();
+    if (seen[title]) {
+      toDelete.push(item);
+    } else {
+      seen[title] = true;
+    }
+  });
+
+  for (var i = toDelete.length - 1; i >= 0; i--) {
+    form.deleteItem(toDelete[i]);
+  }
+
+  SpreadsheetApp.getUi().alert(
+    "✅ ลบ question ซ้ำ " + toDelete.length + " ข้อแล้วค่ะ\n" +
+    "ตอนนี้มีทั้งหมด " + form.getItems().length + " คำถาม"
+  );
+}
+
 // เพิ่ม 3 คำถามที่ยังขาด (แหล่งจับ / วันที่จับ–วัน / วันที่จับ–เดือน) และจัดลำดับ
 function fixMissingQuestions() {
   var form = FormApp.openById("1E7lftgnlrkU4PpOAkJz5Yjo_aoMvKGlt6CFalQQawiA");
