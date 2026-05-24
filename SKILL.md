@@ -35,6 +35,7 @@ Apo/
 └── apps-script/
     ├── Dashboard.gs        ← Admin dashboard + setup functions
     ├── ImportStock.gs      ← นำเข้าปลา + FISH_PRICES + FISH_ENGLISH + price lookup
+    ├── WebApp.gs           ← doGet() — API ให้เว็บลูกค้าดึงข้อมูล
     └── RecordSale.gs       ← บันทึกการขาย (ยังไม่ได้ integrate)
 ```
 
@@ -74,6 +75,7 @@ Apo/
 | I | วันที่ Publish |
 | J | สถานะ |
 | K | หมวดหมู่ |
+| L | หน่วย (`kg` หรือ `ตัว`) ← auto-fill จาก Sheet ราคาปลา |
 
 ### Sheet 3: "ราคาปลา"
 | Col | ข้อมูล |
@@ -103,11 +105,16 @@ Apo/
 | `addEnglishNamesColumn()` | เพิ่ม col E ชื่ออังกฤษในชีทราคาปลาที่มีอยู่แล้ว (ไม่ลบข้อมูล) |
 | `openPriceSheet()` | เมนู APO Stock → ✏️ จัดการราคาปลา |
 
+### WebApp.gs
+| ฟังก์ชัน | ทำอะไร |
+|---------|--------|
+| `doGet()` | ดึงข้อมูลจาก Sheet 2 ส่งเป็น JSON ให้เว็บลูกค้า รวม `unit` field |
+
 ### Dashboard.gs
 | ฟังก์ชัน | ทำอะไร |
 |---------|--------|
 | `openDashboard()` | เปิด Admin dashboard (modal) |
-| `publishFish(data)` | เขียนปลาลง Sheet 2 — หา column สถานะจาก header โดยตรง สร้างเองถ้าไม่มี |
+| `publishFish(data)` | เขียนปลาลง Sheet 2 รวม col L (หน่วย) — หา column สถานะจาก header โดยตรง สร้างเองถ้าไม่มี |
 | `uploadNewImage(...)` | อัปโหลดรูปไป Google Drive |
 | `setupFishTypeQuestion()` | **รันครั้งเดียว** — อัปเดต Google Form dropdown ชื่อปลา Thai/English (อ่านจาก Sheet ราคาปลา col A+E) |
 | `setupAllFormQuestions()` | กู้คืน form questions ทั้งหมดถ้าหาย |

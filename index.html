@@ -107,9 +107,9 @@
                         <small style="color:var(--gold)">${item.code}</small>
                         <h2>${item.name}</h2>
                         <div class="specs-grid">
-                            <div class="spec-row"><span class="spec-label">Weight</span><span>${item.weight} kg</span></div>
+                            <div class="spec-row"><span class="spec-label">${item.unit === 'ตัว' ? 'Qty' : 'Weight'}</span><span>${item.weight} ${item.unit||'kg'}</span></div>
                             <div class="spec-row"><span class="spec-label">Origin</span><span>${item.source}</span></div>
-                            <div class="spec-row"><span class="spec-label">Price / kg</span><span>${parseInt(item.priceKg).toLocaleString()} ฿</span></div>
+                            <div class="spec-row"><span class="spec-label">Price / ${item.unit||'kg'}</span><span>${parseInt(item.priceKg).toLocaleString()} ฿</span></div>
                             <div class="spec-row"><span class="spec-label">Total Amount</span><span class="price-highlight">${(item.weight * item.priceKg).toLocaleString()} ฿</span></div>
                         </div>
                         <button class="order-btn" onclick="window.open('https://line.me/R/oaMessage/@885iivsu/?สนใจสั่งซื้อ ${item.name} รหัส ${item.code}')">Order Now</button>

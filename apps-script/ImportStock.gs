@@ -382,7 +382,8 @@ function importSelectedFish(selectedRows) {
       makeDriveImageUrl(row.image),
       today,
       "พร้อมขาย",
-      row.category
+      row.category,
+      row.unit || "kg"
     ]);
 
     liveSheet.getRange(lastRow, 7).setFormula(

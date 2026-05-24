@@ -29,7 +29,7 @@ function publishFish(data) {
   liveSheet.appendRow([
     data.name, data.code, parseFloat(data.weight) || 0,
     data.source, data.date, parseFloat(data.priceKg) || "", "", data.image,
-    today, "พร้อมขาย", data.category
+    today, "พร้อมขาย", data.category, data.unit || "kg"
   ]);
   liveSheet.getRange(lastRow, 7).setFormula(
     "=IF(F"+lastRow+"*C"+lastRow+'=0,"",F'+lastRow+"*C"+lastRow+")"
@@ -224,7 +224,7 @@ function getDashboardHtml() {
   + '    .publishFish({rowIndex:f.rowIndex,statusCol:f.statusCol,name:document.getElementById("fn").value,code:document.getElementById("fc").value,'
   + '      weight:document.getElementById("fw").value,priceKg:document.getElementById("fprice").value,'
   + '      source:document.getElementById("fs").value,'
-  + '      date:document.getElementById("fd").value,category:document.getElementById("fcat").value,image:imgUrl});'
+  + '      date:document.getElementById("fd").value,category:document.getElementById("fcat").value,unit:f.unit||"kg",image:imgUrl});'
   + '  }'
   + '  if(b64){google.script.run.withSuccessHandler(save).withFailureHandler(function(e){msg.className="err";msg.textContent=e.message;btn.disabled=false;btn.textContent="ขึ้นขาย";}).uploadNewImage(b64,mime,fname);}'
   + '  else{save(driveUrl(fish[sel].image));}'
