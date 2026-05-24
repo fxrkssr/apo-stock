@@ -213,9 +213,14 @@ function getRawStock() {
   var data = sheet.getDataRange().getValues();
   if (data.length < 2) return [];
 
-  // อ่าน column index จาก header row — รองรับกรณี Form มี column ซ้ำ
+  // อ่าน column index จาก header row
   var headers   = data[0].map(function(h) { return (h || "").toString().trim(); });
-  var nameCol   = headers.lastIndexOf("ชื่อปลา");     // ใช้ last = dropdown ใหม่
+
+  // เก็บ *ทุก* index ที่ชื่อว่า "ชื่อปลา" — มีซ้ำได้หลาย column
+  var nameCols  = [];
+  headers.forEach(function(h, i) { if (h === "ชื่อปลา") nameCols.push(i); });
+  if (nameCols.length === 0) nameCols = [1];
+
   var codeCol   = headers.indexOf("รหัสตัว");
   var weightCol = headers.indexOf("น้ำหนัก (กก.)");
   var sourceCol = headers.indexOf("แหล่งจับ");
@@ -225,8 +230,6 @@ function getRawStock() {
   var imageCol  = headers.indexOf("แนบรูป");
   var statusCol = headers.lastIndexOf("สถานะ");
 
-  // fallback ถ้าหา header ไม่เจอ
-  if (nameCol   < 0) nameCol   = 1;
   if (codeCol   < 0) codeCol   = 2;
   if (weightCol < 0) weightCol = 3;
   if (sourceCol < 0) sourceCol = 4;
@@ -238,7 +241,13 @@ function getRawStock() {
 
   var result = [];
   data.slice(1).forEach(function(row, i) {
-    if (!row[nameCol]) return;
+    // หาชื่อปลาจาก column ไหนก็ได้ที่มีข้อมูล (รองรับ duplicate columns)
+    var fishName = "";
+    nameCols.forEach(function(col) {
+      if (!fishName && row[col]) fishName = row[col].toString().trim();
+    });
+    if (!fishName) return;
+
     var status = (row[statusCol] || "").toString() || "ใหม่";
     if (status === "Publish แล้ว") return;
 
@@ -246,7 +255,6 @@ function getRawStock() {
     var month = row[monthCol] || "";
     var date  = day && month ? day + " " + month : "";
 
-    var fishName  = row[nameCol].toString().trim();
     var fishImage = makeDriveImageUrl(row[imageCol]) ||
                     (getPriceLookup().images[getThaiName(fishName)] || "");
 
