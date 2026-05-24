@@ -104,8 +104,8 @@ function getDashboardHtml() {
   + '        <div class="field full"><label>ชื่อปลา</label><input type="text" id="fn" /></div>'
   + '        <div class="field"><label>รหัสตัว</label><input type="text" id="fc" /></div>'
   + '        <div class="field"><label>ประเภท</label><select id="fcat"><option value="ปลา">ปลา</option><option value="หอย/ทะเล">หอย/ทะเล</option></select></div>'
-  + '        <div class="field"><label>น้ำหนัก (กก.)</label><input type="number" id="fw" step="0.1" /></div>'
-  + '        <div class="field"><label>ราคา/กก. (บาท)</label><input type="number" id="fprice" step="1" placeholder="กรอกราคา" /></div>'
+  + '        <div class="field"><label id="fw-label">น้ำหนัก (กก.)</label><input type="number" id="fw" step="0.1" /></div>'
+  + '        <div class="field"><label id="fprice-label">ราคา/กก. (บาท)</label><input type="number" id="fprice" step="1" placeholder="กรอกราคา" /></div>'
   + '        <div class="field"><label>แหล่งจับ</label><input type="text" id="fs" /></div>'
   + '        <div class="field"><label>วันที่จับ</label><input type="text" id="fd" /></div>'
   + '      </div>'
@@ -152,7 +152,10 @@ function getDashboardHtml() {
   + '  document.getElementById("fs").value=f.source||"";'
   + '  document.getElementById("fd").value=f.date||"";'
   + '  document.getElementById("fcat").value=f.category||"ปลา";'
-  + '  document.getElementById("fprice").value="";'
+  + '  document.getElementById("fprice").value=f.priceKg||"";'
+  + '  var unit=f.unit||"kg";'
+  + '  document.getElementById("fw-label").textContent=unit==="ตัว"?"จำนวน (ตัว)":"น้ำหนัก (กก.)";'
+  + '  document.getElementById("fprice-label").textContent=unit==="ตัว"?"ราคา/ตัว (บาท)":"ราคา/กก. (บาท)";'
   + '  var pv=document.getElementById("ipv"); var ph=document.getElementById("iph");'
   + '  if(f.image){pv.src=f.image;pv.style.display="block";ph.style.display="none";}else{pv.style.display="none";ph.style.display="flex";}'
   + '  document.getElementById("inote").textContent="ใช้รูปเดิมจากชาวประมง";'
@@ -219,4 +222,51 @@ function getDashboardHtml() {
 
   return '<!DOCTYPE html><html><head><meta charset="UTF-8"><style>' + css + '</style></head>'
     + '<body>' + body + '<script>' + js + '<\/script></body></html>';
+}
+
+// รันครั้งเดียวจาก Apps Script Editor เพื่ออัปเดต Google Form
+// Run > setupFishTypeQuestion
+function setupFishTypeQuestion() {
+  var FORM_ID = "1FAIpQLSd"; // placeholder — ดูจาก URL ของ Form ที่ edit
+
+  // ดึง Form ID จริงจาก URL: https://docs.google.com/forms/d/<FORM_ID>/edit
+  // แล้วแทนค่า FORM_ID ด้านบน
+  var formUrl = "https://forms.gle/oo5p5TmVtR49HijP7";
+
+  // resolve short URL → เปิดด้วย ID ตรง ๆ แทน
+  var REAL_FORM_ID = "1E7lftgnlrkU4PpOAkJz5Yjo_aoMvKGlt6CFalQQawiA";
+  var form;
+  try {
+    form = FormApp.openById(REAL_FORM_ID);
+  } catch(e) {
+    SpreadsheetApp.getUi().alert("กรุณาแทนค่า REAL_FORM_ID ด้วย ID จาก URL ของ Google Form\n\nเปิด Form → ดู URL → คัดลอก ID ยาว ๆ มาใส่");
+    return;
+  }
+
+  // อ่านชื่อปลาจาก Sheet "ราคาปลา" (ถ้ามี) — ไม่ต้อง hardcode อีกต่อไป
+  var ss         = SpreadsheetApp.getActiveSpreadsheet();
+  var priceSheet = ss.getSheetByName("ราคาปลา");
+  var choices;
+
+  if (priceSheet) {
+    var rows = priceSheet.getDataRange().getValues().slice(1);
+    choices = rows
+      .filter(function(r) { return r[0] && r[2]; })
+      .map(function(r) { return r[0].toString().trim(); });
+  } else {
+    // fallback hardcode ถ้ายังไม่ได้รัน setupPriceSheet
+    choices = Object.keys(FISH_PRICES);
+  }
+
+  // ลบ question ชื่อปลาเดิม (ถ้ามี)
+  form.getItems().forEach(function(item) {
+    if (item.getTitle() === "ชื่อปลา") form.deleteItem(item);
+  });
+
+  // เพิ่ม dropdown ใหม่
+  var listItem = form.addListItem();
+  listItem.setTitle("ชื่อปลา").setRequired(true).setChoiceValues(choices);
+  form.moveItem(listItem.getIndex(), 0);
+
+  SpreadsheetApp.getUi().alert("✅ อัปเดต Google Form เรียบร้อยแล้วค่ะ\nเพิ่ม dropdown ชื่อปลา " + choices.length + " ชนิด");
 }

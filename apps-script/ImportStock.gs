@@ -1,3 +1,158 @@
+// ตารางราคาปลา (Thai name → ราคา/kg)
+var FISH_PRICES = {
+  "ปลากะมงขมิ้น":           480,
+  "ปลาเจ้าสมุทร":            800,
+  "ปลากะมงครีบฟ้า":          480,
+  "ปลากะมงคีบฟ้า":           480,
+  "ปลากะมงหัวกลม":           440,
+  "ปลาเก๋าพริกไทย":          480,
+  "ปลาเก๋าลายเมฆ":           460,
+  "ปลากุดสลาด":              1300,
+  "ปลาตะมะ":                 480,
+  "ปลาหมอทะเล":              560,
+  "ปลากะมงพร้าว":            440,
+  "ปลากะมงจั๊งจั่น":         590,
+  "ปลากะมงทะเลทราย":         380,
+  "ปลาตะคองลาย":             380,
+  "ปลากะพงเขียว":            600,
+  "ปลาอีคุดปากหมู":          480,
+  "ปลาทูลัง":                399,
+  "ปลาอังเกย":               480,
+  "ปลาอินทรีย์รีดเลือด":     600,
+  "ปลาหัวเสี้ยม":            480,
+  "ปลาอีโต้มอญ":             480,
+  "ปลาเก่าดอกดำ":            480,
+  "ปลาแดงเขี้ยว":            480,
+  "ปลาสร้อยนกเขา":           290,
+  "ปลาเก๋าสายบัว":           480,
+  "ปลาเก๋าดอกแดง":           480,
+  "ปลาเก๋าเลือดนก":          560,
+  "ปลาแพะ":                  480,
+  "ปลาดาบ":                  320,
+  "ปลากะรังหัวโขน":          480,
+  "ปลาสลิดหิน":              480,
+  "ปลาสละ":                  480,
+  "ปลาเก๋าเสือ":             560,
+  "ปลากะพงแดงหลี":           830,
+  "ปลาแชกำ":                 440,
+  "ปลาขี้ตังเบ็ดครีบเหลือง": 400,
+  "ปลากะพงเหลือง การีซี":    480,
+  "ปลาการีซี":               480,
+  "ปลามั่นแดง จวดแดง":       480,
+  "ปลาหางเหลืองญี่ปุ่น":     230,
+};
+
+// ดึงชื่อไทยออกจาก "ปลาแพะ/Red Mullet" → "ปลาแพะ"
+function getThaiName(name) {
+  if (!name) return "";
+  return name.toString().split("/")[0].trim();
+}
+
+// Lookup ราคาจากชื่อปลา (รองรับทั้ง "ปลาแพะ" และ "ปลาแพะ/Red Mullet")
+function getFishPrice(name) {
+  return FISH_PRICES[getThaiName(name)] || 0;
+}
+
+// ปลาที่ราคาต่อตัว (ไม่ใช่ต่อ kg) — fallback ถ้าไม่มี Sheet ราคาปลา
+var FISH_UNITS = {
+  "ปลากะรังหัวโขน": "ตัว",
+};
+
+function getFishUnit(name) {
+  return FISH_UNITS[getThaiName(name)] || "kg";
+}
+
+// ─── อ่านราคาจาก Sheet "ราคาปลา" (ถ้ามี) แทน hardcode ───
+var _priceLookup = null;
+
+function getPriceLookup() {
+  if (_priceLookup) return _priceLookup;
+
+  var ss    = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = ss.getSheetByName("ราคาปลา");
+
+  if (!sheet) {
+    _priceLookup = { prices: FISH_PRICES, units: FISH_UNITS, images: {} };
+    return _priceLookup;
+  }
+
+  var data   = sheet.getDataRange().getValues();
+  var prices = {};
+  var units  = {};
+  var images = {};
+
+  data.slice(1).forEach(function(row) {
+    var name  = (row[0] || "").toString().trim();
+    var unit  = (row[1] || "kg").toString().trim();
+    var price = parseFloat(row[2]) || 0;
+    var img   = (row[3] || "").toString().trim();
+    if (name && price) {
+      prices[name] = price;
+      if (unit !== "kg") units[name] = unit;
+      if (img) images[name] = img;
+    }
+  });
+
+  _priceLookup = { prices: prices, units: units, images: images };
+  return _priceLookup;
+}
+
+// ใช้ฟังก์ชันเหล่านี้แทน FISH_PRICES/FISH_UNITS โดยตรง
+function getFishPriceDynamic(name) {
+  return getPriceLookup().prices[getThaiName(name)] || 0;
+}
+
+function getFishUnitDynamic(name) {
+  return getPriceLookup().units[getThaiName(name)] || "kg";
+}
+
+// ─── สร้าง Sheet "ราคาปลา" พร้อม data เริ่มต้น ───
+// รันครั้งเดียวจาก Apps Script Editor: Run > setupPriceSheet
+function setupPriceSheet() {
+  var ss    = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = ss.getSheetByName("ราคาปลา");
+
+  if (!sheet) {
+    sheet = ss.insertSheet("ราคาปลา");
+  } else {
+    sheet.clearContents();
+  }
+
+  // Header
+  sheet.appendRow(["ชื่อปลา", "หน่วย", "ราคา", "รูปภาพ default"]);
+
+  // Data เริ่มต้นจาก FISH_PRICES + FISH_UNITS
+  Object.keys(FISH_PRICES).forEach(function(name) {
+    var unit  = FISH_UNITS[name] || "kg";
+    var price = FISH_PRICES[name];
+    sheet.appendRow([name, unit, price, ""]);
+  });
+
+  // จัด style header
+  var header = sheet.getRange(1, 1, 1, 3);
+  header.setBackground("#2B5089").setFontColor("#FFFFFF").setFontWeight("bold");
+  sheet.setColumnWidth(1, 220);
+  sheet.setColumnWidth(2, 80);
+  sheet.setColumnWidth(3, 100);
+  sheet.setColumnWidth(4, 300);
+
+  // Dropdown kg / ตัว ใน column B
+  var unitRule = SpreadsheetApp.newDataValidation()
+    .requireValueInList(["kg", "ตัว"], true)
+    .setAllowInvalid(false)
+    .build();
+  sheet.getRange("B2:B1000").setDataValidation(unitRule);
+
+  sheet.getRange("C2:C1000").setNumberFormat("0");
+
+  SpreadsheetApp.getUi().alert(
+    "✅ สร้าง Sheet ราคาปลาเรียบร้อยแล้วค่ะ\n" +
+    "แก้ราคาได้ที่ Column C\nเปลี่ยนหน่วยได้ที่ Column B (kg หรือ ตัว)"
+  );
+}
+
+// ─────────────────────────────────────────────
+
 function onOpen() {
   SpreadsheetApp.getUi()
     .createMenu("APO Stock")
@@ -6,6 +161,8 @@ function onOpen() {
     .addItem("สรุปยอดขาย", "openSalesSummary")
     .addSeparator()
     .addItem("รีเฟรช Web App", "refreshWebApp")
+    .addSeparator()
+    .addItem("✏️ จัดการราคาปลา", "openPriceSheet")
     .addToUi();
 }
 
@@ -66,6 +223,9 @@ function getRawStock() {
     var month = row[7] || "";
     var date = day && month ? day + " " + month : "";
 
+    var fishImage = makeDriveImageUrl(row[8]) ||
+                    (getPriceLookup().images[getThaiName(row[1])] || "");
+
     result.push({
       rowIndex: i + 2,
       name:     row[1],
@@ -74,9 +234,11 @@ function getRawStock() {
       source:   row[4],
       note:     row[5],
       date:     date,
-      image:    makeDriveImageUrl(row[8]),
+      image:    fishImage,
       status:   status,
-      category: getCategory(row[1])
+      category: getCategory(row[1]),
+      priceKg:  getFishPriceDynamic(row[1]),
+      unit:     getFishUnitDynamic(row[1])
     });
   });
 
@@ -96,8 +258,9 @@ function importSelectedFish(selectedRows) {
   var imported = 0;
 
   selectedRows.forEach(function(row) {
-    var weight  = parseFloat(row.weight) || 0;
-    var lastRow = liveSheet.getLastRow() + 1;
+    var weight   = parseFloat(row.weight) || 0;
+    var priceKg  = row.priceKg || getFishPriceDynamic(row.name);
+    var lastRow  = liveSheet.getLastRow() + 1;
 
     liveSheet.appendRow([
       row.name,
@@ -105,7 +268,7 @@ function importSelectedFish(selectedRows) {
       weight,
       row.source,
       row.date,
-      "",
+      priceKg,
       "",
       makeDriveImageUrl(row.image),
       today,
@@ -128,6 +291,18 @@ function refreshWebApp() {
   SpreadsheetApp.getUi().alert("Web App ดึงข้อมูลจาก Sheet แบบ real-time อยู่แล้วค่ะ");
 }
 
+function openPriceSheet() {
+  var ss    = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = ss.getSheetByName("ราคาปลา");
+  if (!sheet) {
+    var ui = SpreadsheetApp.getUi();
+    var res = ui.alert("ยังไม่มี Sheet ราคาปลา", "ต้องการสร้างเลยไหมคะ?", ui.ButtonSet.YES_NO);
+    if (res === ui.Button.YES) setupPriceSheet();
+    return;
+  }
+  ss.setActiveSheet(sheet);
+}
+
 function getSidebarHtml() {
   var html = '<!DOCTYPE html><html><head><meta charset="UTF-8"><style>';
   html += '* { margin:0; padding:0; box-sizing:border-box; }';
@@ -148,11 +323,13 @@ function getSidebarHtml() {
   html += '.fish-detail { display:grid; grid-template-columns:1fr 1fr; gap:4px; }';
   html += '.detail-item { font-size:11px; color:#666; }';
   html += '.detail-label { color:#aaa; }';
+  html += '.price-tag { font-size:12px; font-weight:700; color:#AF9500; }';
   html += '.btn-import { width:100%; padding:12px; background:#2B5089; color:white; border:none; border-radius:8px; font-size:14px; font-weight:600; cursor:pointer; margin-top:8px; }';
   html += '.btn-import:disabled { background:#ccc; cursor:not-allowed; }';
   html += '.empty { text-align:center; padding:30px; color:#aaa; }';
   html += '.count { font-size:11px; color:#888; margin-bottom:10px; }';
   html += '.success { background:#e1f5ee; color:#0a6e43; padding:10px 12px; border-radius:8px; margin-bottom:10px; }';
+  html += '.no-price { color:#e57373; font-size:11px; }';
   html += '</style></head><body>';
   html += '<div class="header"><h2>นำเข้าปลาจากชาวประมง</h2><p>เลือกสิ่งที่ต้องการนำเข้า Stock ขาย</p></div>';
   html += '<div class="content">';
@@ -179,15 +356,21 @@ function getSidebarHtml() {
   html += '  var h = "";';
   html += '  fish.forEach(function(f, i) {';
   html += '    var cc = f.category === "ปลา" ? "cat-fish" : "cat-shell";';
+  html += '    var priceHtml = f.priceKg > 0';
+  html += '      ? "<span class=\\"price-tag\\">" + f.priceKg.toLocaleString() + " ฿/" + (f.unit||"kg") + "</span>"';
+  html += '      : "<span class=\\"no-price\\">ไม่พบราคา</span>";';
   html += '    h += "<div class=\\"fish-item\\" id=\\"item-" + i + "\\" onclick=\\"toggleSelect(" + i + ")\\">";';
   html += '    h += "<div class=\\"fish-header\\">";';
   html += '    h += "<span class=\\"fish-name\\">" + f.name + "</span>";';
   html += '    h += "<span class=\\"fish-code\\">" + f.code + "</span>";';
   html += '    h += "<span class=\\"cat-badge " + cc + "\\">" + f.category + "</span>";';
   html += '    h += "</div><div class=\\"fish-detail\\">";';
-  html += '    h += "<div class=\\"detail-item\\"><span class=\\"detail-label\\">น้ำหนัก </span>" + f.weight + " กก.</div>";';
+  html += '    var wLabel = (f.unit === "ตัว") ? "จำนวน" : "น้ำหนัก";';
+  html += '    var wUnit  = (f.unit === "ตัว") ? " ตัว" : " กก.";';
+  html += '    h += "<div class=\\"detail-item\\"><span class=\\"detail-label\\">" + wLabel + " </span>" + f.weight + wUnit + "</div>";';
   html += '    h += "<div class=\\"detail-item\\"><span class=\\"detail-label\\">แหล่งจับ </span>" + f.source + "</div>";';
   html += '    h += "<div class=\\"detail-item\\"><span class=\\"detail-label\\">วันที่จับ </span>" + f.date + "</div>";';
+  html += '    h += "<div class=\\"detail-item\\"><span class=\\"detail-label\\">ราคา </span>" + priceHtml + "</div>";';
   html += '    h += "</div></div>";';
   html += '  });';
   html += '  document.getElementById("fish-list").innerHTML = h;';
