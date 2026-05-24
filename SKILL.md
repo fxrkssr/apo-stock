@@ -33,9 +33,9 @@ Apo/
 ├── workflow.html           ← diagram แสดง flow ของระบบ
 ├── SKILL.md                ← ไฟล์นี้
 └── apps-script/
-    ├── Dashboard.gs        ← Admin dashboard + setupFishTypeQuestion + setupPriceSheet
-    ├── ImportStock.gs      ← นำเข้าปลา + FISH_PRICES + price lookup จาก Sheet
-    └── RecordSale.gs       ← บันทึกการขาย (ไม่ได้แตะในรอบนี้)
+    ├── Dashboard.gs        ← Admin dashboard + setup functions
+    ├── ImportStock.gs      ← นำเข้าปลา + FISH_PRICES + FISH_ENGLISH + price lookup
+    └── RecordSale.gs       ← บันทึกการขาย (ยังไม่ได้ integrate)
 ```
 
 ---
@@ -49,12 +49,16 @@ Apo/
 | B | ชื่อปลา (format: `ปลาแพะ/Red Mullet`) |
 | C | รหัสตัว |
 | D | น้ำหนัก (กก.) |
-| E | แหล่งจับ |
-| F | หมายเหตุ |
-| G | วันที่จับ – วัน |
-| H | วันที่จับ – เดือน |
-| I | แนบรูป (URL) |
-| J | สถานะ (`Publish แล้ว`) |
+| E | หมายเหตุ |
+| F | แนบรูป (URL) |
+| G | แหล่งจับ |
+| H | วันที่จับ – วัน |
+| I | วันที่จับ – เดือน |
+| J–L | (ซ่อนไว้) duplicate columns จากการ setup — ว่างเสมอ |
+| M | สถานะ (`Publish แล้ว`) |
+
+> **หมายเหตุ column:** Google Forms สร้าง column ใหม่ทุกครั้งที่เพิ่ม question ลบ column ที่ link กับ form ไม่ได้ — ซ่อนไว้แทน
+> `getRawStock()` ใช้ `allCols()` + `pickVal()` scan ทุก column ที่ชื่อเหมือนกัน เอาค่าแรกที่ไม่ว่าง
 
 ### Sheet 2: "Stock ที่จะขายให้ลูกค้า"
 | Col | ข้อมูล |
@@ -64,20 +68,21 @@ Apo/
 | C | น้ำหนัก/จำนวน |
 | D | แหล่งจับ |
 | E | วันที่จับ |
-| F | ราคา/kg (หรือ/ตัว) ← **auto-fill จาก Sheet ราคาปลา** |
+| F | ราคา/kg (หรือ/ตัว) ← auto-fill จาก Sheet ราคาปลา |
 | G | ยอดรวม (formula =F×C) |
 | H | รูปภาพ |
 | I | วันที่ Publish |
 | J | สถานะ |
 | K | หมวดหมู่ |
 
-### Sheet 3: "ราคาปลา" ← **สร้างในรอบนี้**
+### Sheet 3: "ราคาปลา"
 | Col | ข้อมูล |
 |-----|--------|
 | A | ชื่อปลา (Thai) |
 | B | หน่วย (`kg` หรือ `ตัว`) — dropdown |
 | C | ราคา |
-| D | รูปภาพ default (URL) — ใส่ทีหลังได้ |
+| D | รูปภาพ default (URL) |
+| E | ชื่ออังกฤษ |
 
 > แก้ราคา/เพิ่มปลา: แก้ที่ Sheet นี้โดยตรง ไม่ต้องแตะ code
 
@@ -88,26 +93,30 @@ Apo/
 ### ImportStock.gs
 | ฟังก์ชัน | ทำอะไร |
 |---------|--------|
-| `FISH_PRICES` | hardcode fallback ราคา 40 ชนิด (ใช้เมื่อยังไม่มี Sheet ราคาปลา) |
+| `FISH_PRICES` | hardcode fallback ราคา 40 ชนิด |
 | `FISH_UNITS` | hardcode fallback หน่วย (ปลากะรังหัวโขน = ตัว) |
-| `getPriceLookup()` | อ่านราคา+หน่วย+รูป default จาก Sheet "ราคาปลา" (cache ต่อ request) |
-| `getFishPriceDynamic(name)` | lookup ราคาจาก Sheet |
-| `getFishUnitDynamic(name)` | lookup หน่วยจาก Sheet |
-| `getRawStock()` | ดึงปลาใหม่จาก Sheet 1 (ยังไม่ Publish) + แนบ priceKg, unit, รูป default |
+| `FISH_ENGLISH` | hardcode ชื่ออังกฤษ 40 ชนิด |
+| `getPriceLookup()` | อ่านราคา+หน่วย+รูป+ชื่ออังกฤษ จาก Sheet "ราคาปลา" (cache ต่อ request) |
+| `getRawStock()` | ดึงปลาใหม่จาก Sheet 1 (ยังไม่ Publish) — ใช้ `allCols()`+`pickVal()` รองรับ duplicate columns |
 | `importSelectedFish(rows)` | เขียนลง Sheet 2 พร้อม priceKg auto-fill |
-| `setupPriceSheet()` | **รันครั้งเดียว** — สร้าง Sheet "ราคาปลา" |
+| `setupPriceSheet()` | **รันครั้งเดียว** — สร้าง Sheet "ราคาปลา" พร้อม col E ชื่ออังกฤษ |
+| `addEnglishNamesColumn()` | เพิ่ม col E ชื่ออังกฤษในชีทราคาปลาที่มีอยู่แล้ว (ไม่ลบข้อมูล) |
 | `openPriceSheet()` | เมนู APO Stock → ✏️ จัดการราคาปลา |
 
 ### Dashboard.gs
 | ฟังก์ชัน | ทำอะไร |
 |---------|--------|
 | `openDashboard()` | เปิด Admin dashboard (modal) |
-| `publishFish(data)` | เขียนปลาลง Sheet 2 จาก Dashboard |
-| `setupFishTypeQuestion()` | **รันครั้งเดียว** — อัปเดต Google Form ให้มี dropdown ชนิดปลา (อ่านจาก Sheet ราคาปลา) |
+| `publishFish(data)` | เขียนปลาลง Sheet 2 — หา column สถานะจาก header โดยตรง สร้างเองถ้าไม่มี |
 | `uploadNewImage(...)` | อัปโหลดรูปไป Google Drive |
+| `setupFishTypeQuestion()` | **รันครั้งเดียว** — อัปเดต Google Form dropdown ชื่อปลา Thai/English (อ่านจาก Sheet ราคาปลา col A+E) |
+| `setupAllFormQuestions()` | กู้คืน form questions ทั้งหมดถ้าหาย |
+| `fixMissingQuestions()` | เพิ่มเฉพาะ 3 คำถามที่มักหาย (แหล่งจับ/วันที่จับ–วัน/เดือน) |
+| `removeDuplicateQuestions()` | ลบ form questions ที่ชื่อซ้ำ — เก็บอันแรก |
+| `resetStockSheet()` | unlink form → ลบ sheet เก่า → link ใหม่ → ได้ sheet สะอาด |
 
 ### RecordSale.gs
-ยังไม่ได้แตะ — บันทึกการขายและสรุปยอด
+ยังไม่ได้ integrate กับ price lookup ใหม่
 
 ---
 
@@ -131,17 +140,33 @@ Apo/
 **รูปภาพ priority:** รูปจากชาวประมง → รูป default จาก Sheet ราคาปลา → ว่าง
 
 **แก้ราคา/เพิ่มปลา:** แก้ใน Sheet "ราคาปลา" แล้วรัน `setupFishTypeQuestion` ใหม่
-(อย่าแก้แค่ใน Google Form อย่างเดียว เพราะ lookup จะไม่ match)
+
+**column สถานะ:** `publishFish()` หาจาก header โดยตรง ถ้าไม่มีสร้างเอง — ไม่ต้อง setup ด้วยมือ
+
+**duplicate columns ใน Sheet 1:** เกิดจากการเพิ่ม form questions หลายครั้ง ลบไม่ได้ (Google Forms restriction) → ซ่อนไว้ `getRawStock()` รับมือด้วย `allCols()`+`pickVal()`
 
 ---
 
 ## การ Deploy
 
 **Apps Script → ใช้งาน:**
-1. copy `ImportStock.gs` และ `Dashboard.gs` ขึ้น Apps Script Editor
-2. รัน `setupPriceSheet` (ครั้งเดียว)
-3. รัน `setupFishTypeQuestion` (ครั้งเดียว หรือทุกครั้งที่เพิ่ม/แก้ชนิดปลา)
-4. Deploy → Manage deployments → New version
+1. Copy `ImportStock.gs` และ `Dashboard.gs` ขึ้น Apps Script Editor
+2. Save → Deploy → Manage deployments → New version → Deploy
+
+**Setup ครั้งแรก (รันตามลำดับ):**
+1. `setupPriceSheet` — สร้าง Sheet ราคาปลา (รันครั้งเดียว)
+2. `setupAllFormQuestions` — สร้าง form questions ครบ
+3. `setupFishTypeQuestion` — เพิ่ม dropdown ชื่อปลา Thai/English
+4. `addEnglishNamesColumn` — เพิ่ม col E ชื่ออังกฤษใน Sheet ราคาปลา
+
+**ถ้า form questions หาย:**
+1. `fixMissingQuestions` — เพิ่ม 3 คำถามที่หายกลับมา
+2. `removeDuplicateQuestions` — ลบซ้ำถ้ามี
+3. `setupFishTypeQuestion` — อัปเดต dropdown ชื่อปลา
+
+**ถ้า Sheet 1 รก (duplicate columns เยอะ):**
+- `resetStockSheet` — unlink form ลบ sheet เก่า สร้างใหม่สะอาด (ข้อมูลเก่าหายหมด)
+- แล้วรัน setup ครั้งแรกใหม่
 
 **หน้าเว็บลูกค้า → ใช้งาน:**
 - แก้ `index.html` → git push → Vercel auto-deploy
@@ -149,6 +174,6 @@ Apo/
 ---
 
 ## สิ่งที่ยังไม่ได้ทำ / ทำต่อได้
-- [ ] ใส่รูปภาพ default ใน Sheet "ราคาปลา" Column D (ยังว่างอยู่)
+- [ ] ใส่รูปภาพ default ใน Sheet "ราคาปลา" Column D
 - [ ] `RecordSale.gs` — ยังไม่ได้ integrate กับ price lookup ใหม่
-- [ ] หอย/ทะเล — ยังไม่มีตารางราคา (ปัจจุบันอยู่ใน tab "Shell & Sea" แต่ไม่มี price list)
+- [ ] หอย/ทะเล — ยังไม่มีตารางราคา
