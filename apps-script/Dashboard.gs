@@ -224,6 +224,50 @@ function getDashboardHtml() {
     + '<body>' + body + '<script>' + js + '<\/script></body></html>';
 }
 
+// รีเซ็ต Sheet "Stock จากชาวประมง" ให้สะอาด — ลบข้อมูลเก่าและ column ซ้ำทิ้งทั้งหมด
+// รันครั้งเดียวจาก Apps Script Editor: Run > resetStockSheet
+function resetStockSheet() {
+  var FORM_ID = "1E7lftgnlrkU4PpOAkJz5Yjo_aoMvKGlt6CFalQQawiA";
+  var ss   = SpreadsheetApp.getActiveSpreadsheet();
+  var form = FormApp.openById(FORM_ID);
+
+  var oldSheet = ss.getSheetByName("Stock จากชาวประมง");
+
+  // 1. ยกเลิก link form → sheet เก่า (ทำให้ลบ column ได้)
+  try { form.removeDestination(); } catch(e) {}
+
+  // 2. rename sheet เก่าก่อนเพื่อไม่ให้ชื่อชน
+  if (oldSheet) oldSheet.setName("__old_stock__");
+
+  // 3. link form → spreadsheet นี้ใหม่ → สร้าง sheet สะอาด
+  var sheetsBefore = ss.getSheets().map(function(s) { return s.getName(); });
+  form.setDestination(FormApp.DestinationType.SPREADSHEET, ss.getId());
+  Utilities.sleep(4000);
+
+  // 4. หา sheet ใหม่ที่เพิ่งสร้าง
+  var newSheet = null;
+  ss.getSheets().forEach(function(s) {
+    if (sheetsBefore.indexOf(s.getName()) === -1) newSheet = s;
+  });
+  if (newSheet) {
+    newSheet.setName("Stock จากชาวประมง");
+    ss.moveActiveSheet(ss.getSheets().indexOf(newSheet) + 1);
+  }
+
+  // 5. ลบ sheet เก่า
+  var toDelete = ss.getSheetByName("__old_stock__");
+  if (toDelete) ss.deleteSheet(toDelete);
+
+  // 6. เพิ่ม column "สถานะ" ท้าย header
+  var target = ss.getSheetByName("Stock จากชาวประมง");
+  if (target) {
+    var lastCol = target.getLastColumn() + 1;
+    target.getRange(1, lastCol).setValue("สถานะ");
+  }
+
+  SpreadsheetApp.getUi().alert("✅ รีเซ็ต Sheet เรียบร้อยแล้วค่ะ\nตอนนี้ column ตรงกับ Form พอดี");
+}
+
 // กู้คืน form questions ที่หายไป — รันครั้งเดียวจาก Apps Script Editor
 function setupAllFormQuestions() {
   var REAL_FORM_ID = "1E7lftgnlrkU4PpOAkJz5Yjo_aoMvKGlt6CFalQQawiA";
