@@ -34,7 +34,9 @@ function publishFish(data) {
   liveSheet.getRange(lastRow, 7).setFormula(
     "=IF(F"+lastRow+"*C"+lastRow+'=0,"",F'+lastRow+"*C"+lastRow+")"
   );
-  var statusColIdx = ((data.statusCol != null ? data.statusCol : 9) + 1);
+  var hdr = rawSheet.getRange(1, 1, 1, rawSheet.getLastColumn()).getValues()[0];
+  var statusColIdx = hdr.lastIndexOf("สถานะ") + 1;
+  if (statusColIdx <= 0) statusColIdx = data.statusCol != null ? data.statusCol + 1 : 10;
   rawSheet.getRange(data.rowIndex, statusColIdx).setValue("Publish แล้ว");
   return { success: true, message: "ขึ้นขายเรียบร้อยแล้วค่ะ" };
 }
