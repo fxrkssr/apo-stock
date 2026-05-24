@@ -268,6 +268,35 @@ function resetStockSheet() {
   SpreadsheetApp.getUi().alert("✅ รีเซ็ต Sheet เรียบร้อยแล้วค่ะ\nตอนนี้ column ตรงกับ Form พอดี");
 }
 
+// เพิ่ม 3 คำถามที่ยังขาด (แหล่งจับ / วันที่จับ–วัน / วันที่จับ–เดือน) และจัดลำดับ
+function fixMissingQuestions() {
+  var form = FormApp.openById("1E7lftgnlrkU4PpOAkJz5Yjo_aoMvKGlt6CFalQQawiA");
+
+  form.addListItem().setTitle("แหล่งจับ").setRequired(true)
+    .setChoiceValues(["หลีเป๊ะ","ภูเก็ต","กระบี่","สตูล","ตรัง","ระนอง","สุราษฎร์ธานี","อื่นๆ"]);
+
+  var days = [];
+  for (var d = 1; d <= 31; d++) days.push(String(d));
+  form.addListItem().setTitle("วันที่จับ – วัน").setRequired(true).setChoiceValues(days);
+
+  form.addListItem().setTitle("วันที่จับ – เดือน").setRequired(true)
+    .setChoiceValues(["มกราคม","กุมภาพันธ์","มีนาคม","เมษายน","พฤษภาคม","มิถุนายน","กรกฎาคม","สิงหาคม","กันยายน","ตุลาคม","พฤศจิกายน","ธันวาคม"]);
+
+  // จัดลำดับ
+  var order = ["ชื่อปลา","รหัสตัว","น้ำหนัก (กก.)","แหล่งจับ","หมายเหตุ","วันที่จับ – วัน","วันที่จับ – เดือน","แนบรูป"];
+  order.forEach(function(title, pos) {
+    var items = form.getItems();
+    for (var i = 0; i < items.length; i++) {
+      if (items[i].getTitle() === title) {
+        try { form.moveItem(items[i].getIndex(), pos); } catch(e) {}
+        break;
+      }
+    }
+  });
+
+  SpreadsheetApp.getUi().alert("✅ เพิ่มครบแล้วค่ะ รวม " + form.getItems().length + " คำถาม");
+}
+
 // กู้คืน form questions ที่หายไป — รันครั้งเดียวจาก Apps Script Editor
 function setupAllFormQuestions() {
   var REAL_FORM_ID = "1E7lftgnlrkU4PpOAkJz5Yjo_aoMvKGlt6CFalQQawiA";
