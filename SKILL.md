@@ -20,7 +20,7 @@
 | Google Form (edit) | https://docs.google.com/forms/d/1E7lftgnlrkU4PpOAkJz5Yjo_aoMvKGlt6CFalQQawiA/edit |
 | Google Sheets | https://docs.google.com/spreadsheets/d/1681oFVd80odwKx_9mx5aG4-NOVLGIC7Sxu4RmwMr3mA/edit |
 | Apps Script Editor | เปิดจาก Sheets → Extensions → Apps Script |
-| Apps Script API (public) | https://script.google.com/macros/s/AKfycbwWBH-Bcvh8W6LNLbLMIkQxizQsAG6yNYnTUeoHV6aRIPT8VFa_N6AdQuDQCqtumsGxTA/exec |
+| Apps Script API (public) | https://script.google.com/macros/s/AKfycbxxjhG6wbxg9Okvui3_wW0DlUhxGXwPSP5aCOzeM7ahevlD4cYv4HicKsI3I5ilUTLK2A/exec |
 | GitHub Repo | https://github.com/fxrkssr/apo-stock |
 
 ---
