@@ -88,11 +88,16 @@
             btn.classList.add('active');
             document.getElementById('panel-' + target).classList.add('active');
         }
-        async function loadData() {
-            const res = await fetch(API);
-            const items = await res.json();
-            document.getElementById('panel-fish').innerHTML = render(items.filter(i => i.category === "ปลา"));
-            document.getElementById('panel-shell').innerHTML = render(items.filter(i => i.category === "หอย/ทะเล"));
+        function loadData() {
+            const fn = '_cb' + Date.now();
+            window[fn] = function(items) {
+                delete window[fn];
+                document.getElementById('panel-fish').innerHTML = render(items.filter(i => i.category === "ปลา"));
+                document.getElementById('panel-shell').innerHTML = render(items.filter(i => i.category === "หอย/ทะเล"));
+            };
+            const s = document.createElement('script');
+            s.src = API + '?callback=' + fn;
+            document.head.appendChild(s);
         }
         function toImgUrl(url) {
             if (!url || url.indexOf('drive.google.com') === -1) return url;
