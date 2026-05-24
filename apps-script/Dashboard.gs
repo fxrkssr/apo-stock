@@ -224,6 +224,71 @@ function getDashboardHtml() {
     + '<body>' + body + '<script>' + js + '<\/script></body></html>';
 }
 
+// กู้คืน form questions ที่หายไป — รันครั้งเดียวจาก Apps Script Editor
+function setupAllFormQuestions() {
+  var REAL_FORM_ID = "1E7lftgnlrkU4PpOAkJz5Yjo_aoMvKGlt6CFalQQawiA";
+  var form;
+  try {
+    form = FormApp.openById(REAL_FORM_ID);
+  } catch(e) {
+    SpreadsheetApp.getUi().alert("เปิด Form ไม่ได้: " + e.message);
+    return;
+  }
+
+  function getByTitle(title) {
+    var items = form.getItems();
+    for (var i = 0; i < items.length; i++) {
+      if (items[i].getTitle() === title) return items[i];
+    }
+    return null;
+  }
+
+  if (!getByTitle("รหัสตัว")) {
+    form.addTextItem().setTitle("รหัสตัว").setRequired(true);
+  }
+  if (!getByTitle("แหล่งจับ")) {
+    form.addListItem().setTitle("แหล่งจับ").setRequired(true)
+      .setChoiceValues(["หลีเป๊ะ", "ภูเก็ต", "กระบี่", "สตูล", "ตรัง", "ระนอง", "สุราษฎร์ธานี", "อื่นๆ"]);
+  }
+  if (!getByTitle("วันที่จับ – วัน")) {
+    var days = [];
+    for (var d = 1; d <= 31; d++) days.push(String(d));
+    form.addListItem().setTitle("วันที่จับ – วัน").setRequired(true).setChoiceValues(days);
+  }
+  if (!getByTitle("วันที่จับ – เดือน")) {
+    form.addListItem().setTitle("วันที่จับ – เดือน").setRequired(true)
+      .setChoiceValues(["มกราคม","กุมภาพันธ์","มีนาคม","เมษายน","พฤษภาคม","มิถุนายน","กรกฎาคม","สิงหาคม","กันยายน","ตุลาคม","พฤศจิกายน","ธันวาคม"]);
+  }
+
+  // จัดลำดับให้ตรงกับ Sheet columns: B C D E F G H I
+  var order = [
+    "ชื่อปลา",
+    "รหัสตัว",
+    "น้ำหนัก (กก.)",
+    "แหล่งจับ",
+    "หมายเหตุ",
+    "วันที่จับ – วัน",
+    "วันที่จับ – เดือน",
+    "แนบรูป"
+  ];
+  order.forEach(function(title, targetPos) {
+    var items = form.getItems();
+    for (var i = 0; i < items.length; i++) {
+      if (items[i].getTitle() === title) {
+        if (items[i].getIndex() !== targetPos) {
+          try { form.moveItem(items[i].getIndex(), targetPos); } catch(e) {}
+        }
+        break;
+      }
+    }
+  });
+
+  SpreadsheetApp.getUi().alert(
+    "✅ กู้คืน Form เรียบร้อยแล้วค่ะ\n" +
+    "Sheet จะมี column ใหม่เพิ่มมา — ปกติค่ะ ระบบรับมือไว้แล้ว"
+  );
+}
+
 // รันครั้งเดียวจาก Apps Script Editor เพื่ออัปเดต Google Form
 // Run > setupFishTypeQuestion
 function setupFishTypeQuestion() {

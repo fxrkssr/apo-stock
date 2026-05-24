@@ -292,64 +292,62 @@ function getRawStock() {
   if (data.length < 2) return [];
 
   // อ่าน column index จาก header row
-  var headers   = data[0].map(function(h) { return (h || "").toString().trim(); });
+  var headers = data[0].map(function(h) { return (h || "").toString().trim(); });
 
-  // เก็บ *ทุก* index ที่ชื่อว่า "ชื่อปลา" — มีซ้ำได้หลาย column
-  var nameCols  = [];
-  headers.forEach(function(h, i) { if (h === "ชื่อปลา") nameCols.push(i); });
-  if (nameCols.length === 0) nameCols = [1];
+  // รวบรวมทุก index ที่มีชื่อ header ตรงกัน (รองรับ duplicate columns)
+  function allCols(name) {
+    var cols = [];
+    headers.forEach(function(h, i) { if (h === name) cols.push(i); });
+    return cols;
+  }
+  // คืนค่าแรกที่ไม่ว่างจาก cols ที่ให้มา
+  function pickVal(row, cols) {
+    for (var k = 0; k < cols.length; k++) {
+      var v = row[cols[k]];
+      if (v != null && v !== "") return v;
+    }
+    return "";
+  }
 
-  var codeCol   = headers.indexOf("รหัสตัว");
-  var weightCol = headers.indexOf("น้ำหนัก (กก.)");
-  var sourceCol = headers.indexOf("แหล่งจับ");
-  var noteCol   = headers.indexOf("หมายเหตุ");
-  var dayCol    = headers.indexOf("วันที่จับ – วัน");
-  var monthCol  = headers.indexOf("วันที่จับ – เดือน");
-  var imageCol  = headers.indexOf("แนบรูป");
-  var statusCol = headers.lastIndexOf("สถานะ");
-
-  if (codeCol   < 0) codeCol   = 2;
-  if (weightCol < 0) weightCol = 3;
-  if (sourceCol < 0) sourceCol = 4;
-  if (noteCol   < 0) noteCol   = 5;
-  if (dayCol    < 0) dayCol    = 6;
-  if (monthCol  < 0) monthCol  = 7;
-  if (imageCol  < 0) imageCol  = 8;
-  if (statusCol < 0) statusCol = 9;
+  var nameCols   = allCols("ชื่อปลา");        if (!nameCols.length)   nameCols   = [1];
+  var codeCols   = allCols("รหัสตัว");        if (!codeCols.length)   codeCols   = [2];
+  var weightCols = allCols("น้ำหนัก (กก.)"); if (!weightCols.length) weightCols = [3];
+  var sourceCols = allCols("แหล่งจับ");       if (!sourceCols.length) sourceCols = [4];
+  var noteCols   = allCols("หมายเหตุ");       if (!noteCols.length)   noteCols   = [5];
+  var dayCols    = allCols("วันที่จับ – วัน");   if (!dayCols.length)    dayCols    = [6];
+  var monthCols  = allCols("วันที่จับ – เดือน"); if (!monthCols.length)  monthCols  = [7];
+  var imageCols  = allCols("แนบรูป");         if (!imageCols.length)  imageCols  = [8];
+  var statusCol  = headers.lastIndexOf("สถานะ"); if (statusCol < 0)      statusCol  = 9;
 
   var result = [];
   data.slice(1).forEach(function(row, i) {
-    // หาชื่อปลาจาก column ไหนก็ได้ที่มีข้อมูล (รองรับ duplicate columns)
-    var fishName = "";
-    nameCols.forEach(function(col) {
-      if (!fishName && row[col]) fishName = row[col].toString().trim();
-    });
+    var fishName = pickVal(row, nameCols);
     if (!fishName) return;
 
     var status = (row[statusCol] || "").toString() || "ใหม่";
     if (status === "Publish แล้ว") return;
 
-    var day   = row[dayCol]   || "";
-    var month = row[monthCol] || "";
+    var day   = pickVal(row, dayCols);
+    var month = pickVal(row, monthCols);
     var date  = day && month ? day + " " + month : "";
 
-    var fishImage = makeDriveImageUrl(row[imageCol]) ||
+    var fishImage = makeDriveImageUrl(pickVal(row, imageCols)) ||
                     (getPriceLookup().images[getThaiName(fishName)] || "");
 
     result.push({
       rowIndex:  i + 2,
       name:      fishName,
-      code:      row[codeCol],
-      weight:    row[weightCol],
-      source:    row[sourceCol],
-      note:      row[noteCol],
+      code:      pickVal(row, codeCols),
+      weight:    pickVal(row, weightCols),
+      source:    pickVal(row, sourceCols),
+      note:      pickVal(row, noteCols),
       date:      date,
       image:     fishImage,
       status:    status,
       category:  getCategory(fishName),
       priceKg:   getFishPriceDynamic(fishName),
       unit:      getFishUnitDynamic(fishName),
-      statusCol: statusCol  // ส่งไปให้ importSelectedFish ใช้ mark status
+      statusCol: statusCol
     });
   });
 
