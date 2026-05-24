@@ -252,10 +252,18 @@ function setupFishTypeQuestion() {
     var rows = priceSheet.getDataRange().getValues().slice(1);
     choices = rows
       .filter(function(r) { return r[0] && r[2]; })
-      .map(function(r) { return r[0].toString().trim(); });
+      .map(function(r) {
+        var thaiName = r[0].toString().trim();
+        var engName  = (r[4] || "").toString().trim();
+        if (!engName) engName = FISH_ENGLISH[thaiName] || "";
+        return engName ? thaiName + "/" + engName : thaiName;
+      });
   } else {
     // fallback hardcode ถ้ายังไม่ได้รัน setupPriceSheet
-    choices = Object.keys(FISH_PRICES);
+    choices = Object.keys(FISH_PRICES).map(function(name) {
+      var eng = FISH_ENGLISH[name] || "";
+      return eng ? name + "/" + eng : name;
+    });
   }
 
   // หา list items ที่มีอยู่แล้วทั้งหมด

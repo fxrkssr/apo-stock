@@ -58,6 +58,50 @@ var FISH_UNITS = {
   "ปลากะรังหัวโขน": "ตัว",
 };
 
+// ชื่อภาษาอังกฤษของแต่ละชนิดปลา
+var FISH_ENGLISH = {
+  "ปลากะมงขมิ้น":           "Blacktip Trevally",
+  "ปลาเจ้าสมุทร":            "Bluberlip Snapper",
+  "ปลากะมงครีบฟ้า":          "Bluefin Trevally",
+  "ปลากะมงคีบฟ้า":           "Blue Fin Trevally",
+  "ปลากะมงหัวกลม":           "Buldger Trevally",
+  "ปลาเก๋าพริกไทย":          "Camouflage Grouper",
+  "ปลาเก๋าลายเมฆ":           "Cloudy Grouper",
+  "ปลากุดสลาด":              "Coral Grouper",
+  "ปลาตะมะ":                 "Emperor",
+  "ปลาหมอทะเล":              "Giant Grouper",
+  "ปลากะมงพร้าว":            "Giant Trevally",
+  "ปลากะมงจั๊งจั่น":         "Golden Pompano",
+  "ปลากะมงทะเลทราย":         "Golden Trevally",
+  "ปลาตะคองลาย":             "Striped Trevally",
+  "ปลากะพงเขียว":            "Green Jobfish",
+  "ปลาอีคุดปากหมู":          "Harry Hot Lips",
+  "ปลาทูลัง":                "Indian Mackerel",
+  "ปลาอังเกย":               "John Snapper",
+  "ปลาอินทรีย์รีดเลือด":     "King Mackerel",
+  "ปลาหัวเสี้ยม":            "Longnose Emperor",
+  "ปลาอีโต้มอญ":             "Mahi Mahi",
+  "ปลาเก่าดอกดำ":            "Malabar Grouper",
+  "ปลาแดงเขี้ยว":            "Mangrove Snapper",
+  "ปลาสร้อยนกเขา":           "Painted Sweetlips",
+  "ปลาเก๋าสายบัว":           "Peacock Rockcod",
+  "ปลาเก๋าดอกแดง":           "Red Dot Grouper",
+  "ปลาเก๋าเลือดนก":          "Red Mouth Grouper",
+  "ปลาแพะ":                  "Red Mullet",
+  "ปลาดาบ":                  "Ribbon Fish",
+  "ปลากะรังหัวโขน":          "Stone Fish",
+  "ปลาสลิดหิน":              "Streaked Spinefoot",
+  "ปลาสละ":                  "Talang Queen Fish",
+  "ปลาเก๋าเสือ":             "Tiger Grouper",
+  "ปลากะพงแดงหลี":           "Two Spot Red Snapper",
+  "ปลาแชกำ":                 "Yellow Dot Giant Trevally",
+  "ปลาขี้ตังเบ็ดครีบเหลือง": "Yellowfin Surgeon Fish",
+  "ปลากะพงเหลือง การีซี":    "Yellow Snapper",
+  "ปลาการีซี":               "Yellow Snapper",
+  "ปลามั่นแดง จวดแดง":       "Yellow Streaked Snapper",
+  "ปลาหางเหลืองญี่ปุ่น":     "Yellow Tail Fusilier",
+};
+
 function getFishUnit(name) {
   return FISH_UNITS[getThaiName(name)] || "kg";
 }
@@ -76,24 +120,27 @@ function getPriceLookup() {
     return _priceLookup;
   }
 
-  var data   = sheet.getDataRange().getValues();
-  var prices = {};
-  var units  = {};
-  var images = {};
+  var data    = sheet.getDataRange().getValues();
+  var prices  = {};
+  var units   = {};
+  var images  = {};
+  var english = {};
 
   data.slice(1).forEach(function(row) {
     var name  = (row[0] || "").toString().trim();
     var unit  = (row[1] || "kg").toString().trim();
     var price = parseFloat(row[2]) || 0;
     var img   = (row[3] || "").toString().trim();
+    var eng   = (row[4] || "").toString().trim();
     if (name && price) {
       prices[name] = price;
       if (unit !== "kg") units[name] = unit;
       if (img) images[name] = img;
+      if (eng) english[name] = eng;
     }
   });
 
-  _priceLookup = { prices: prices, units: units, images: images };
+  _priceLookup = { prices: prices, units: units, images: images, english: english };
   return _priceLookup;
 }
 
@@ -119,22 +166,24 @@ function setupPriceSheet() {
   }
 
   // Header
-  sheet.appendRow(["ชื่อปลา", "หน่วย", "ราคา", "รูปภาพ default"]);
+  sheet.appendRow(["ชื่อปลา", "หน่วย", "ราคา", "รูปภาพ default", "ชื่ออังกฤษ"]);
 
-  // Data เริ่มต้นจาก FISH_PRICES + FISH_UNITS
+  // Data เริ่มต้นจาก FISH_PRICES + FISH_UNITS + FISH_ENGLISH
   Object.keys(FISH_PRICES).forEach(function(name) {
     var unit  = FISH_UNITS[name] || "kg";
     var price = FISH_PRICES[name];
-    sheet.appendRow([name, unit, price, ""]);
+    var eng   = FISH_ENGLISH[name] || "";
+    sheet.appendRow([name, unit, price, "", eng]);
   });
 
   // จัด style header
-  var header = sheet.getRange(1, 1, 1, 3);
+  var header = sheet.getRange(1, 1, 1, 5);
   header.setBackground("#2B5089").setFontColor("#FFFFFF").setFontWeight("bold");
   sheet.setColumnWidth(1, 220);
   sheet.setColumnWidth(2, 80);
   sheet.setColumnWidth(3, 100);
   sheet.setColumnWidth(4, 300);
+  sheet.setColumnWidth(5, 200);
 
   // Dropdown kg / ตัว ใน column B
   var unitRule = SpreadsheetApp.newDataValidation()
@@ -152,6 +201,35 @@ function setupPriceSheet() {
 }
 
 // ─────────────────────────────────────────────
+
+// เพิ่มคอลัมน์ชื่ออังกฤษ (col E) ใน Sheet ราคาปลาที่มีอยู่แล้ว — รันครั้งเดียว
+function addEnglishNamesColumn() {
+  var ss    = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = ss.getSheetByName("ราคาปลา");
+  if (!sheet) {
+    SpreadsheetApp.getUi().alert("ไม่พบ Sheet ราคาปลา กรุณารัน setupPriceSheet ก่อนค่ะ");
+    return;
+  }
+
+  var data = sheet.getDataRange().getValues();
+  sheet.getRange(1, 5).setValue("ชื่ออังกฤษ")
+    .setBackground("#2B5089").setFontColor("#FFFFFF").setFontWeight("bold");
+  sheet.setColumnWidth(5, 200);
+
+  var updates = [];
+  data.slice(1).forEach(function(row, i) {
+    var thaiName = (row[0] || "").toString().trim();
+    updates.push([(row[4] || "").toString().trim() || FISH_ENGLISH[thaiName] || ""]);
+  });
+  if (updates.length) {
+    sheet.getRange(2, 5, updates.length, 1).setValues(updates);
+  }
+
+  SpreadsheetApp.getUi().alert(
+    "✅ เพิ่มคอลัมน์ชื่ออังกฤษเรียบร้อยแล้วค่ะ\n" +
+    "รัน setupFishTypeQuestion ต่อเพื่ออัปเดต Google Form"
+  );
+}
 
 function onOpen() {
   SpreadsheetApp.getUi()
